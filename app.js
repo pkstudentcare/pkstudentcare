@@ -4,7 +4,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyBXQmnX4Q5Qm_KgvoDUeapSDplSv126H-Q",
   authDomain: "pkstudentcare-6cc57.firebaseapp.com",
-  databaseURL: "https://pkstudentcare-6cc57-default-rtdb.asia-southeast1.firebasedatabase.app",
+  databaseURL: "https://pkstudentcare-6cc57-default-rtdb.asia-southeast1.firebasedatabase.app/",
   projectId: "pkstudentcare-6cc57",
   storageBucket: "pkstudentcare-6cc57.firebasestorage.app",
   messagingSenderId: "993494045553",
@@ -165,7 +165,7 @@ const app = {
     const pin = pinField ? pinField.value.trim() : '';
     const errorMsg = document.getElementById('pin-error-message');
 
-    if (pin === '0000') {
+    if (pin === '1234') {
       appState.userRole = 'admin';
       sessionStorage.setItem('userRole', 'admin');
       this.applyRoleUI();
