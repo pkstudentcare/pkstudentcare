@@ -549,10 +549,10 @@ const app = {
       const online = parseInt(document.getElementById('input-online-count').value) || 0;
 
       if (visited > totalStud) {
-        document.getElementById('visit-validation-message').textContent = '⚠️ จำนวนนักเรียนที่เยี่ยมแล้ว ห้ามเกินจำนวนนักเรียนทั้งหมด';
+        document.getElementById('visit-validation-message').textContent = '⚠️ จำนวนนักเรียนที่เยี่ยมบ้านแล้ว ห้ามเกินจำนวนนักเรียนทั้งหมด';
         isValid = false;
       } else if (online > visited) {
-        document.getElementById('visit-validation-message').textContent = '⚠️ จำนวนเยี่ยมออนไลน์ ห้ามมากกว่าจำนวนนักเรียนที่เยี่ยมแล้ว';
+        document.getElementById('visit-validation-message').textContent = '⚠️ จำนวนเยี่ยมบ้านออนไลน์ ห้ามมากกว่าจำนวนนักเรียนที่เยี่ยมบ้านแล้ว';
         isValid = false;
       } else {
         document.getElementById('visit-validation-message').textContent = '';
@@ -1440,7 +1440,7 @@ const app = {
             <span class="mini-stat-value">${report.totalStudents} คน</span>
           </div>
           <div class="mini-stat">
-            <span class="mini-stat-label">เยี่ยมแล้ว</span>
+            <span class="mini-stat-label">เยี่ยมบ้านแล้ว</span>
             <span class="mini-stat-value">${report.stat_visitedCount} คน (${tPercent}%)</span>
           </div>
         </div>
@@ -1645,7 +1645,7 @@ const app = {
             <div class="stat-icon" style="background-color: #e8f8f5; color: var(--success-green);">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
-            <div class="stat-label">เยี่ยมเรียบร้อยแล้ว</div>
+            <div class="stat-label">เยี่ยมบ้านเรียบร้อยแล้ว</div>
             <div class="stat-number">${data.stat_visitedCount}</div>
             <div class="stat-sub">${visitedPercent}%</div>
           </div>
@@ -1653,7 +1653,7 @@ const app = {
             <div class="stat-icon" style="background-color: #ebf5fb; color: var(--light-blue);">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
             </div>
-            <div class="stat-label">เยี่ยมรูปแบบออนไลน์</div>
+            <div class="stat-label">เยี่ยมบ้านรูปแบบออนไลน์</div>
             <div class="stat-number">${data.stat_onlineCount}</div>
             <div class="stat-sub">${onlinePercent}%</div>
           </div>
@@ -1661,7 +1661,7 @@ const app = {
             <div class="stat-icon" style="background-color: #fef9e7; color: var(--gold-accent);">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             </div>
-            <div class="stat-label">เยี่ยม ณ บ้านนักเรียน</div>
+            <div class="stat-label">เยี่ยมบ้าน ณ บ้านนักเรียน</div>
             <div class="stat-number">${data.stat_inPersonCount}</div>
             <div class="stat-sub">${inPersonPercent}%</div>
           </div>
@@ -1774,9 +1774,19 @@ const app = {
       ? `รายงานสรุปผลเยี่ยมบ้าน_${report.classLevel.replace(/\s+/g, '')}.pdf` 
       : 'รายงานสรุปผลการเยี่ยมบ้านนักเรียน.pdf';
 
+    const pdfBtn = document.getElementById('btn-pdf-toolbar');
+    const pngBtn = document.getElementById('btn-png-toolbar');
+    const originalPdfText = pdfBtn ? pdfBtn.innerHTML : '';
+    const originalPngText = pngBtn ? pngBtn.innerHTML : '';
+
+    if (pdfBtn) { pdfBtn.disabled = true; pdfBtn.innerHTML = '⏳ กำลังสร้าง PDF...'; }
+    if (pngBtn) { pngBtn.disabled = true; }
+
     this.showToast('กำลังเตรียมโครงสร้างรายงาน... กรุณารอสักครู่', 'info');
 
     try {
+      // Add class to enforce desktop A4 layout during export
+      document.body.classList.add('exporting-pdf');
       const reportEl = document.getElementById('a4-report-content');
 
       const canvas = await html2canvas(reportEl, {
@@ -1784,7 +1794,9 @@ const app = {
         useCORS: true, // Allow cross-origin images
         allowTaint: false, // Prevents security errors under file://
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        scrollX: 0,
+        scrollY: 0
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -1800,6 +1812,11 @@ const app = {
     } catch (err) {
       console.error("Error generating PDF:", err);
       this.showToast('ไม่สามารถส่งออก PDF ได้ กรุณาใช้ระบบสั่งพิมพ์ของเบราว์เซอร์แทน', 'error');
+    } finally {
+      // Remove class and restore buttons
+      document.body.classList.remove('exporting-pdf');
+      if (pdfBtn) { pdfBtn.disabled = false; pdfBtn.innerHTML = originalPdfText; }
+      if (pngBtn) { pngBtn.disabled = false; pngBtn.innerHTML = originalPngText; }
     }
   },
 
@@ -1835,15 +1852,27 @@ const app = {
     const classLevel = report ? report.classLevel : 'รายงานสรุป';
     const fileName = `รายงานสรุปการเยี่ยมบ้าน_${classLevel.replace(/\//g, '_')}.png`;
 
+    const pdfBtn = document.getElementById('btn-pdf-toolbar');
+    const pngBtn = document.getElementById('btn-png-toolbar');
+    const originalPdfText = pdfBtn ? pdfBtn.innerHTML : '';
+    const originalPngText = pngBtn ? pngBtn.innerHTML : '';
+
+    if (pngBtn) { pngBtn.disabled = true; pngBtn.innerHTML = '⏳ กำลังสร้าง PNG...'; }
+    if (pdfBtn) { pdfBtn.disabled = true; }
+
     this.showToast('กำลังเตรียมไฟล์รูปภาพ PNG...', 'info');
 
     try {
+      // Add class to enforce desktop A4 layout during export
+      document.body.classList.add('exporting-pdf');
       const container = document.getElementById('a4-report-content');
       const canvas = await html2canvas(container, {
         scale: 2,
         useCORS: true,
         allowTaint: false, // Prevents security errors under file://
-        logging: false
+        logging: false,
+        scrollX: 0,
+        scrollY: 0
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -1858,6 +1887,11 @@ const app = {
     } catch (err) {
       console.error("Error generating PNG image:", err);
       this.showToast('ไม่สามารถดาวน์โหลดรูปภาพได้', 'error');
+    } finally {
+      // Remove class and restore buttons
+      document.body.classList.remove('exporting-pdf');
+      if (pdfBtn) { pdfBtn.disabled = false; pdfBtn.innerHTML = originalPdfText; }
+      if (pngBtn) { pngBtn.disabled = false; pngBtn.innerHTML = originalPngText; }
     }
   },
 
@@ -2054,7 +2088,7 @@ const app = {
         <div class="overview-stat-card" style="border-bottom-color: var(--success-green);">
           <div class="overview-stat-icon" style="background-color:#e8f8f5; color:var(--success-green);">🏡</div>
           <div class="overview-stat-info">
-            <span class="overview-stat-label">ดำเนินการเยี่ยมแล้ว</span>
+            <span class="overview-stat-label">ดำเนินการเยี่ยมบ้านแล้ว</span>
             <span class="overview-stat-number">${totalVisited} <span style="font-size:14px; font-weight:500;">คน</span></span>
             <span class="overview-stat-sub" style="color:var(--success-green);">คิดเป็น ${overallVisitedPercent.toFixed(1)}% ของทั้งหมด</span>
           </div>
@@ -2064,7 +2098,7 @@ const app = {
           <div class="overview-stat-info">
             <span class="overview-stat-label">เยี่ยมบ้านออนไลน์</span>
             <span class="overview-stat-number">${totalOnline} <span style="font-size:14px; font-weight:500;">คน</span></span>
-            <span class="overview-stat-sub" style="color:var(--gold-accent);">คิดเป็น ${overallOnlinePercent.toFixed(1)}% ของที่เยี่ยมแล้ว</span>
+            <span class="overview-stat-sub" style="color:var(--gold-accent);">คิดเป็น ${overallOnlinePercent.toFixed(1)}% ของที่เยี่ยมบ้านแล้ว</span>
           </div>
         </div>
       </div>

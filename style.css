@@ -1,4 +1,4 @@
-﻿/* CSS Variables & Theme Setup */
+/* CSS Variables & Theme Setup */
 :root {
   --primary-blue: #1B3A6B;
   --accent-blue: #2B5EA7;
@@ -2297,4 +2297,195 @@ body {
   color: #1b3a6b;
   line-height: 1.3;
 }
+
+/* ==========================================
+   Export PDF Layout Locking (Force A4 Desktop)
+   ========================================== */
+body.exporting-pdf .a4-page-wrapper {
+  display: block !important;
+  width: 794px !important;
+  max-width: 794px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+body.exporting-pdf .a4-page {
+  width: 794px !important;
+  height: 1123px !important;
+  min-height: 1123px !important;
+  transform: none !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* ==========================================
+   Mobile Responsive Styles (max-width: 768px)
+   ========================================== */
+@media (max-width: 768px) {
+  /* App Header & Navigation */
+  .app-header {
+    position: static !important;
+    height: auto !important;
+    padding: 10px 15px !important;
+  }
+  .header-container {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .app-logo {
+    justify-content: center !important;
+  }
+  .app-nav {
+    justify-content: center !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  .nav-tab {
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+  }
+  .user-profile {
+    justify-content: center !important;
+    margin-top: 4px !important;
+  }
+  .app-container {
+    padding: 15px 10px !important;
+  }
+
+  /* Dashboard View & Filters */
+  .dashboard-header-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 15px !important;
+    text-align: center !important;
+  }
+  .dashboard-header-row .btn-primary {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 15px !important;
+  }
+  .filter-group {
+    width: 100% !important;
+  }
+  .filter-group select, .filter-group input {
+    width: 100% !important;
+  }
+  .dashboard-submenu {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .submenu-tabs {
+    width: 100% !important;
+    flex-direction: column !important;
+  }
+  .submenu-tabs .tab-btn {
+    width: 100% !important;
+    text-align: center !important;
+  }
+  .submenu-actions {
+    width: 100% !important;
+  }
+  .submenu-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .reports-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .overview-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .overview-charts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+
+  /* Form Wizard & Steps */
+  .step-indicator {
+    padding: 10px 5px !important;
+    overflow-x: auto !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+  }
+  .step-item {
+    flex-shrink: 0 !important;
+  }
+  .step-line {
+    display: none !important; /* Hide connector lines on mobile to save space */
+  }
+  .form-wizard-card {
+    padding: 15px !important;
+  }
+  .form-row {
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+  .form-row .form-group {
+    width: 100% !important;
+  }
+  .photo-upload-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .step-controls {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .step-controls .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Report Preview & Toolbar */
+  .report-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 15px !important;
+  }
+  .toolbar-left, .toolbar-right {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  .toolbar-right .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  /* A4 Preview Scaling Wrapper */
+  .a4-page-wrapper {
+    padding-bottom: 20px !important;
+    overflow-x: hidden !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    height: auto !important;
+    display: block !important;
+  }
+  
+  /* Enforce dynamic scale only when not exporting */
+  body:not(.exporting-pdf) .a4-page {
+    transform-origin: top center !important;
+    transform: scale(calc((100vw - 20px) / 794)) !important;
+    margin: 0 auto !important;
+    margin-bottom: calc(-1123px * (1 - ((100vw - 20px) / 794))) !important;
+  }
+  
+  /* Cover fit image scaling to avoid ratio distortion */
+  .photo-grid-8 img, .photo-grid-item img {
+    object-fit: cover !important;
+  }
+}
+
 
