@@ -1,4 +1,32 @@
 /**
+ * Firebase Configuration & Initialization
+ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBXQmnX4Q5Qm_KgvoDUeapSDplSv126H-Q",
+  authDomain: "pkstudentcare-6cc57.firebaseapp.com",
+  databaseURL: "https://pkstudentcare-6cc57-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "pkstudentcare-6cc57",
+  storageBucket: "pkstudentcare-6cc57.firebasestorage.app",
+  messagingSenderId: "993494045553",
+  appId: "1:993494045553:web:a0b38a0b30b9fb5ba41cd0",
+  measurementId: "G-4C5KQ9N0LL"
+};
+
+// Initialize Firebase Compat
+let database = null;
+try {
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    database = firebase.database();
+    console.log("Firebase Database connected successfully.");
+  } else {
+    console.warn("Firebase SDK is not loaded. Operating in Local-only mode.");
+  }
+} catch (e) {
+  console.error("Firebase Initialization failed:", e);
+}
+
+/**
  * Application State
  */
 const appState = {
@@ -268,13 +296,76 @@ const app = {
       });
       localStorage.setItem('visit_reports', JSON.stringify(appState.reports));
     }
+    
+    // Trigger real-time sync with Firebase
+    this.syncReportsWithFirebase();
   },
 
   /**
-   * Save reports array to localStorage
+   * Save reports array to localStorage and sync to Firebase Database
    */
   saveReportsToStorage() {
     localStorage.setItem('visit_reports', JSON.stringify(appState.reports));
+    
+    // Sync to Firebase Database if available
+    if (database) {
+      try {
+        appState.reports.forEach(report => {
+          // Only sync posted reports, ignore drafts and seed samples
+          if (report.isPosted && !report.isSample && report.reportId !== 'RPT-SAMPLE55') {
+            database.ref('reports/' + report.reportId).set(report);
+          }
+        });
+      } catch (e) {
+        console.error("Error syncing reports to Firebase Database:", e);
+      }
+    }
+  },
+
+  /**
+   * Synchronize reports array with Firebase Database in real-time
+   */
+  syncReportsWithFirebase() {
+    if (!database) return;
+    try {
+      const reportsRef = database.ref('reports');
+      reportsRef.on('value', snapshot => {
+        const remoteData = snapshot.val();
+        if (remoteData) {
+          // Convert dictionary object to array
+          const remoteReports = Object.values(remoteData);
+          
+          // Separate local drafts, sample reports, etc.
+          const localDrafts = appState.reports.filter(r => !r.isPosted || r.isSample || r.reportId === 'RPT-SAMPLE55');
+          
+          // Merge remote reports into local array
+          const merged = [...localDrafts];
+          remoteReports.forEach(remoteRep => {
+            const existingIdx = merged.findIndex(r => r.reportId === remoteRep.reportId);
+            if (existingIdx !== -1) {
+              // Update local with remote copy
+              merged[existingIdx] = remoteRep;
+            } else {
+              // Add new remote report
+              merged.push(remoteRep);
+            }
+          });
+          
+          appState.reports = merged;
+          localStorage.setItem('visit_reports', JSON.stringify(appState.reports));
+          
+          // Re-render views if user is looking at dashboard
+          if (appState.currentView === 'dashboard') {
+            this.renderDashboard();
+            this.renderDashboardOverview();
+          }
+        }
+      }, error => {
+        console.error("Firebase Database listener error:", error);
+      });
+    } catch (e) {
+      console.error("Error initializing Firebase sync listener:", e);
+    }
   },
 
   /**
@@ -1152,6 +1243,16 @@ const app = {
     if (confirm('คุณยืนยันที่จะลบรายงานนี้ใช่หรือไม่? การลบข้อมูลนี้จะไม่สามารถกู้คืนได้')) {
       appState.reports = appState.reports.filter(r => r.reportId !== reportId);
       this.saveReportsToStorage();
+      
+      // Delete from Firebase Database if available
+      if (database) {
+        try {
+          database.ref('reports/' + reportId).remove();
+        } catch (e) {
+          console.error("Error removing report from Firebase Database:", e);
+        }
+      }
+
       this.showToast('ลบรายงานเรียบร้อยแล้ว', 'success');
       this.renderDashboard();
     }
