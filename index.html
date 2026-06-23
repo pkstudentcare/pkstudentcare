@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบรายงานสรุปผลการเยี่ยมบ้านนักเรียน - โรงเรียนพระโขนงพิทยาลัย</title>
+  <!-- Google Fonts: Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 0. LANDING SCREEN (Role Selection) -->
+  <div id="view-landing" class="landing-screen" style="display: flex;">
+    <div class="landing-card">
+      <img src="pklogo.png" alt="โลโก้โรงเรียนพระโขนงพิทยาลัย" class="landing-logo">
+      <h1 class="landing-title">ระบบรายงานสรุปการเยี่ยมบ้านนักเรียน</h1>
+      <p class="landing-subtitle">งานระบบดูแลช่วยเหลือนักเรียน โรงเรียนพระโขนงพิทยาลัย</p>
+      <div class="landing-actions">
+        <button class="btn btn-landing-general" onclick="app.selectRole('teacher')">
+          🙋‍♂️ เข้าใช้งาน (สำหรับครูที่ปรึกษา)
+        </button>
+        <button class="btn btn-landing-admin" onclick="app.showPINScreen()">
+          🔑 สำหรับผู้ดูแลระบบ (Admin)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 0.5. PIN LOCK SCREEN -->
+  <div id="view-pin-lock" class="pin-lock-screen" style="display: none;">
+    <div class="pin-lock-card">
+      <h2 class="pin-title">🔒 กรอกรหัสผ่านผู้ดูแลระบบ</h2>
+      <p class="pin-subtitle">ระบุรหัส PIN 4 หลักเพื่อเข้าใช้งานส่วนของ Admin</p>
+      <input type="password" id="admin-pin-field" class="pin-field" maxlength="4" placeholder="••••" onkeydown="if(event.key==='Enter') app.verifyPIN()">
+      <div id="pin-error-message" class="pin-error-msg"></div>
+      <div class="pin-actions">
+        <button type="button" class="btn btn-secondary" onclick="app.hidePINScreen()">ย้อนกลับ</button>
+        <button type="button" class="btn btn-primary" onclick="app.verifyPIN()">ยืนยัน</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP HEADER (Hidden on print) -->
+  <header class="app-header no-print">
+    <div class="header-container">
+      <div class="app-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="logo-icon">
+          <path d="M11.47 3.82a.75.75 0 011.06 0l8.69 8.69a.75.75 0 11-1.06 1.06l-.22-.22v6.92a1.75 1.75 0 01-1.75 1.75h-2.5a.75.75 0 01-.75-.75v-4.25h-3v4.25a.75.75 0 01-.75.75h-2.5a1.75 1.75 0 01-1.75-1.75V13.35l-.22.22a.75.75 0 01-1.06-1.06l8.69-8.69z" />
+        </svg>
+        <div class="logo-text">
+          <span class="logo-title">เยี่ยมบ้านนักเรียน</span>
+          <span class="logo-subtitle">ระบบดูแลช่วยเหลือนักเรียน โรงเรียนพระโขนงพิทยาลัย</span>
+        </div>
+      </div>
+      <nav class="app-nav">
+        <button class="nav-tab active" id="tab-dashboard" onclick="app.switchView('dashboard')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-icon"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          แดชบอร์ด
+        </button>
+        <button class="nav-tab" id="tab-form" onclick="app.createNewReport()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-icon"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          เขียนรายงานใหม่
+        </button>
+      </nav>
+      <div class="user-profile">
+        <span id="header-role-badge" class="role-badge teacher">ครูที่ปรึกษา</span>
+        <div class="user-avatar" id="header-user-avatar">👨‍🏫</div>
+        <button class="btn-logout" onclick="app.logout()">
+          🚪 ออกจากระบบ
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="app-container">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="view-dashboard" class="app-view dashboard-view active no-print">
+      <div class="dashboard-header-row">
+        <div>
+          <h1 class="view-title">รายการรายงานสรุปการเยี่ยมบ้าน</h1>
+          <p class="view-subtitle">ระบบดูแลช่วยเหลือนักเรียน โรงเรียนพระโขนงพิทยาลัย</p>
+        </div>
+        <button class="btn btn-primary" id="btn-create-report-dash" onclick="app.createNewReport()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          สร้างรายงานใหม่
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label for="filter-semester">ภาคเรียน</label>
+          <select id="filter-semester" onchange="app.filterReports()">
+            <option value="">ทั้งหมด</option>
+            <option value="ภาคเรียนที่ 1">ภาคเรียนที่ 1</option>
+            <option value="ภาคเรียนที่ 2">ภาคเรียนที่ 2</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-year">ปีการศึกษา</label>
+          <select id="filter-year" onchange="app.filterReports()">
+            <option value="">ทั้งหมด</option>
+            <option value="ปีการศึกษา 2569">ปีการศึกษา 2569</option>
+            <option value="ปีการศึกษา 2568">ปีการศึกษา 2568</option>
+            <option value="ปีการศึกษา 2567">ปีการศึกษา 2567</option>
+          </select>
+        </div>
+        <div class="filter-group search-group">
+          <label for="search-input">ค้นหาห้องเรียน / ครูที่ปรึกษา</label>
+          <div class="search-input-wrapper">
+            <input type="text" id="search-input" placeholder="ค้นหาห้องเรียน / ครูที่ปรึกษา" oninput="app.filterReports()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Tabs & Utilities -->
+      <div class="dashboard-submenu">
+        <div class="submenu-tabs">
+          <button class="tab-btn active" id="btn-tab-list" onclick="app.switchDashboardTab('list')">
+            📂 รายงานทั้งหมด
+          </button>
+          <button class="tab-btn" id="btn-tab-overview" onclick="app.switchDashboardTab('overview')">
+            📊 สถิติภาพรวมระดับโรงเรียน
+          </button>
+        </div>
+        <div class="submenu-actions">
+          <button class="btn btn-secondary btn-sm" id="btn-export-csv" onclick="app.exportCSV()">
+            📥 ส่งออก CSV (สำหรับ Excel)
+          </button>
+        </div>
+      </div>
+
+      <!-- School Overview Stats Grid -->
+      <div id="reports-overview" class="reports-overview-container" style="display: none;">
+        <!-- Rendered dynamically in app.js -->
+      </div>
+
+      <!-- Reports List Grid -->
+      <div id="reports-grid" class="reports-grid">
+        <div class="empty-state">
+          <div class="empty-icon">📁</div>
+          <h3>ยังไม่มีข้อมูลรายงาน</h3>
+          <p>เริ่มต้นสร้างรายงานฉบับแรกโดยคลิกที่ปุ่มสร้างรายงานใหม่</p>
+          <button class="btn btn-primary" id="btn-create-report-empty" onclick="app.createNewReport()">สร้างรายงานฉบับแรก</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. FORM VIEW (WIZARD) -->
+    <section id="view-form" class="app-view form-view no-print" style="display: none;">
+      <div class="form-wizard-card">
+        
+        <!-- Step Progress Indicator -->
+        <div class="step-indicator">
+          <div class="step-item active" data-step="1" onclick="app.goToStep(1)">
+            <div class="step-circle">1</div>
+            <div class="step-label">ข้อมูลทั่วไป</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item" data-step="2" onclick="app.goToStep(2)">
+            <div class="step-circle">2</div>
+            <div class="step-label">สถิติเยี่ยมบ้าน</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item" data-step="3" onclick="app.goToStep(3)">
+            <div class="step-circle">3</div>
+            <div class="step-label">สถานะครอบครัว</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item" data-step="4" onclick="app.goToStep(4)">
+            <div class="step-circle">4</div>
+            <div class="step-label">รายได้/เศรษฐกิจ</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item" data-step="5" onclick="app.goToStep(5)">
+            <div class="step-circle">5</div>
+            <div class="step-label">ปัญหาที่พบ</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item" data-step="6" onclick="app.goToStep(6)">
+            <div class="step-circle">6</div>
+            <div class="step-label">แนวทางการช่วยเหลือ</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item" data-step="7" onclick="app.goToStep(7)">
+            <div class="step-circle">7</div>
+            <div class="step-label">ภาพถ่าย/สรุป</div>
+          </div>
+        </div>
+
+        <form id="report-form" autocomplete="off" onsubmit="event.preventDefault();">
+          
+          <!-- STEP 1: General Info -->
+          <div class="form-step active" data-step="1">
+            <h2 class="step-title">ข้อมูลทั่วไปของรายงาน</h2>
+            <p class="step-description">ข้อมูลหน่วยงานจะถูกล็อกเป็น โรงเรียนพระโขนงพิทยาลัย เสมอ</p>
+            
+            <div class="form-row">
+              <div class="form-group col-12">
+                <label class="form-label" for="input-school-name">ชื่อโรงเรียน / หน่วยงาน</label>
+                <input type="text" id="input-school-name" class="form-input readonly-input" required value="โรงเรียนพระโขนงพิทยาลัย" readonly>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-semester">ภาคเรียน <span class="required">*</span></label>
+                <select id="input-semester" class="form-select" required>
+                  <option value="ภาคเรียนที่ 1">ภาคเรียนที่ 1</option>
+                  <option value="ภาคเรียนที่ 2">ภาคเรียนที่ 2</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-academic-year">ปีการศึกษา <span class="required">*</span></label>
+                <select id="input-academic-year" class="form-select" required>
+                  <option value="ปีการศึกษา 2569">ปีการศึกษา 2569</option>
+                  <option value="ปีการศึกษา 2568">ปีการศึกษา 2568</option>
+                  <option value="ปีการศึกษา 2567">ปีการศึกษา 2567</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-class-level">ระดับชั้น / ห้อง <span class="required">*</span></label>
+                <input type="text" id="input-class-level" class="form-input" required placeholder="เช่น ชั้นมัธยมศึกษาปีที่ 5/5">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-total-students">จำนวนนักเรียนทั้งหมดในห้อง <span class="required">*</span></label>
+                <input type="number" id="input-total-students" class="form-input" required min="1" placeholder="เช่น 35">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-visit-period-start">ระยะเวลาเยี่ยมบ้านเริ่มต้น</label>
+                <input type="text" id="input-visit-period-start" class="form-input readonly-input" required value="26 พฤษภาคม 2569" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-visit-period-end">ระยะเวลาเยี่ยมบ้านสิ้นสุด</label>
+                <input type="text" id="input-visit-period-end" class="form-input readonly-input" required value="30 มิถุนายน 2569" readonly>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-advisor-1">ครูที่ปรึกษาคนที่ 1 <span class="required">*</span></label>
+                <input type="text" id="input-advisor-1" class="form-input" required placeholder="ชื่อ-นามสกุล ครูที่ปรึกษาคนที่ 1">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-advisor-2">ครูที่ปรึกษาคนที่ 2 (ถ้ามี)</label>
+                <input type="text" id="input-advisor-2" class="form-input" placeholder="ชื่อ-นามสกุล ครูที่ปรึกษาคนที่ 2">
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: Visit Stats -->
+          <div class="form-step" data-step="2">
+            <h2 class="step-title">สถิติการเยี่ยมบ้านนักเรียน</h2>
+            <p class="step-description">กรอกสถิติจำนวนนักเรียนที่ได้รับการเยี่ยมบ้านตามช่องทางต่างๆ ระบบจะคำนวณร้อยละให้อัตโนมัติ</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-visited-count">จำนวนนักเรียนทั้งหมดที่ดำเนินการเยี่ยมบ้าน <span class="required">*</span></label>
+                <input type="number" id="input-visited-count" class="form-input" required min="0">
+                <div class="calc-help">
+                  ร้อยละ: <span class="auto-calc" id="calc-visited-percent">0.00%</span> ของนักเรียนทั้งหมด
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="input-online-count">เยี่ยมบ้านรูปแบบออนไลน์ <span class="required">*</span></label>
+                <input type="number" id="input-online-count" class="form-input" required min="0">
+                <div class="calc-help">
+                  ร้อยละ: <span class="auto-calc" id="calc-online-percent">0.00%</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">เยี่ยมบ้านแบบ ณ ที่ตั้ง (ณ บ้านนักเรียน) <span class="info-badge">คำนวณออโต้</span></label>
+                <div class="static-value-field">
+                  <span id="display-inperson-count" class="bold-val">0</span> คน 
+                  (<span id="calc-inperson-percent">0.00%</span>)
+                </div>
+                <div class="input-desc-helper">คำนวณจาก: จำนวนเยี่ยมแล้ว ลบด้วย จำนวนเยี่ยมออนไลน์</div>
+              </div>
+            </div>
+
+            <div id="visit-validation-message" class="validation-msg"></div>
+          </div>
+
+          <!-- STEP 3: Family Status -->
+          <div class="form-step" data-step="3">
+            <h2 class="step-title">ข้อมูลสถานะครอบครัวของนักเรียน</h2>
+            <p class="step-description">ระบุจำนวนนักเรียนตามรูปแบบโครงสร้างครอบครัวที่กำหนดไว้ (ผลรวมต้องเท่ากับจำนวนนักเรียนที่เยี่ยมบ้านแล้ว)</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-family-complete">1. บิดามารดาอยู่ร่วมกัน (ครบถ้วน)</label>
+                <input type="number" id="input-family-complete" class="form-input family-count" min="0">
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-family-complete-percent">0%</span></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-family-separated">2. บิดามารดาแยกกันอยู่ (หย่าร้าง/แยกกัน)</label>
+                <input type="number" id="input-family-separated" class="form-input family-count" min="0">
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-family-separated-percent">0%</span></div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-family-with-relatives">3. อาศัยอยู่กับญาติ (บิดามารดาไม่ได้อยู่ด้วย)</label>
+                <input type="number" id="input-family-with-relatives" class="form-input family-count" min="0">
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-family-relatives-percent">0%</span></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-family-other">4. อื่นๆ (บิดา/มารดาเสียชีวิต/ไม่มีผู้ดูแล)</label>
+                <input type="number" id="input-family-other" class="form-input family-count" min="0">
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-family-other-percent">0%</span></div>
+              </div>
+            </div>
+
+            <div class="validation-status-box">
+              <span class="status-label">ตรวจสอบผลรวมตัวเลข:</span>
+              <span id="family-sum-status" class="status-value invalid">
+                0 / <span class="target-students-placeholder">35</span> คน (ขาดอีก <span id="family-sum-diff">35</span> คน)
+              </span>
+            </div>
+            <div id="family-validation-message" class="validation-msg"></div>
+          </div>
+
+          <!-- STEP 4: Income Tiers -->
+          <div class="form-step" data-step="4">
+            <h2 class="step-title">สภาพเศรษฐกิจครัวเรือน (รายได้รวมต่อเดือน)</h2>
+            <p class="step-description">ระบุจำนวนครอบครัวนักเรียนตามระดับช่วงรายได้ที่กำหนดไว้ (ผลรวมต้องเท่ากับจำนวนนักเรียนที่เยี่ยมบ้านแล้ว)</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-income-tier1">ต่ำกว่า 10,000 บาท (จำนวนนักเรียน)</label>
+                <input type="number" id="input-income-tier1" class="form-input income-count" min="0">
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier1-percent">0.00%</span></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-income-tier2">10,000 – 30,000 บาท (จำนวนนักเรียน)</label>
+                <input type="number" id="input-income-tier2" class="form-input income-count" min="0">
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier2-percent">0.00%</span></div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-income-tier3">30,000 – 50,000 บาท (จำนวนนักเรียน)</label>
+                <input type="number" id="input-income-tier3" class="form-input income-count" min="0">
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier3-percent">0.00%</span></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-income-tier4">มากกว่า 50,000 บาท (จำนวนนักเรียน)</label>
+                <input type="number" id="input-income-tier4" class="form-input income-count" min="0">
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier4-percent">0.00%</span></div>
+              </div>
+            </div>
+
+            <div class="validation-status-box">
+              <span class="status-label">ตรวจสอบผลรวมตัวเลข:</span>
+              <span id="income-sum-status" class="status-value invalid">
+                0 / <span class="target-students-placeholder">35</span> คน (ขาดอีก <span id="income-sum-diff">35</span> คน)
+              </span>
+            </div>
+            <div id="income-validation-message" class="validation-msg"></div>
+          </div>
+
+          <!-- STEP 5: Top 5 Issues (Checkboxes) -->
+          <div class="form-step" data-step="5">
+            <h2 class="step-title">ประเด็นปัญหาที่พบ (เลือกสูงสุด 5 อันดับแรก)</h2>
+            <p class="step-description">เลือกหัวข้อปัญหาที่พบจากการเยี่ยมบ้าน (สูงสุด 5 ปัญหา) และระบุจำนวนนักเรียนที่เกี่ยวข้องในห้อง</p>
+
+            <div class="issue-checkbox-list">
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาด้านการเงิน/ค่าใช้จ่าย" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาด้านการเงิน/ค่าใช้จ่าย</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาด้านการเรียน" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาด้านการเรียน</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาด้านสุขภาพจิต/ความเครียด" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาด้านสุขภาพจิต/ความเครียด</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาการติดเกม/โซเชียล" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาการติดเกม/โซเชียล</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาด้านครอบครัว" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาด้านครอบครัว</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาการปรับตัว/เข้าสังคม" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาการปรับตัว/เข้าสังคม</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาสิ่งเสพติด" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาสิ่งเสพติด</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+            </div>
+            <div id="issue-validation-message" class="validation-msg"></div>
+          </div>
+
+          <!-- STEP 6: Action Plans -->
+          <div class="form-step" data-step="6">
+            <h2 class="step-title">แนวทางการช่วยเหลือหรือพัฒนา (Action Plans)</h2>
+            <p class="step-description">กรอกข้อเสนอแนะหรือแผนการปฏิบัติงานการดูแลช่วยเหลือนักเรียนในส่วนที่ 5 ของเล่มรายงาน</p>
+
+            <div class="list-section">
+              <div class="list-section-header">
+                <h3 class="list-title">📋 แนวทางการดูแลช่วยเหลือของโรงเรียน (สามารถเพิ่ม/ลบรายการได้)</h3>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="app.addDynamicItem('actionplans-list-inputs')">+ เพิ่มแนวทาง</button>
+              </div>
+              <div id="actionplans-list-inputs" class="dynamic-inputs-container">
+                <!-- Inputs added dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 7: Photos & Summary -->
+          <div class="form-step" data-step="7">
+            <h2 class="step-title">ภาพถ่ายกิจกรรมเยี่ยมบ้าน และสรุปวิเคราะห์ข้อมูล</h2>
+            <p class="step-description">ขั้นตอนสุดท้าย: อัปโหลดภาพเยี่ยมบ้าน 8 ภาพ และเขียนอภิปรายผลภาพรวมเพื่อจัดเก็บข้อมูลเข้าระบบ</p>
+
+            <div class="form-group">
+              <label class="form-label">รูปภาพกิจกรรมเยี่ยมบ้าน (อัปโหลดจำนวน 8 รูป) <span class="required">*</span></label>
+              <p class="input-helper-text">คลิกที่แต่ละช่องเพื่อเลือกไฟล์รูปภาพจากเครื่องของคุณ</p>
+              <div class="photo-upload-grid form-photo-grid">
+                <!-- 8 photo slots -->
+                <div class="photo-slot" data-index="0">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 0)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 1</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(0)">×</button>
+                </div>
+                <div class="photo-slot" data-index="1">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 1)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 2</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(1)">×</button>
+                </div>
+                <div class="photo-slot" data-index="2">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 2)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 3</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(2)">×</button>
+                </div>
+                <div class="photo-slot" data-index="3">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 3)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 4</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(3)">×</button>
+                </div>
+                <div class="photo-slot" data-index="4">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 4)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 5</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(4)">×</button>
+                </div>
+                <div class="photo-slot" data-index="5">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 5)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 6</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(5)">×</button>
+                </div>
+                <div class="photo-slot" data-index="6">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 6)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 7</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(6)">×</button>
+                </div>
+                <div class="photo-slot" data-index="7">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 7)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 8</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(7)">×</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-summary-text">สรุปภาพรวมและวิเคราะห์ผลการเยี่ยมบ้าน <span class="required">*</span></label>
+              <textarea id="input-summary-text" class="form-textarea" rows="4" placeholder="เขียนสรุปอภิปรายภาพรวมการดำเนินงานเยี่ยมบ้านนักเรียนห้องนี้ตามระบบดูแลช่วยเหลือนักเรียน..."></textarea>
+            </div>
+          </div>
+
+          <!-- Wizard Nav Controls -->
+          <div class="step-controls">
+            <button type="button" class="btn btn-secondary" id="btn-prev" onclick="app.prevStep()">ย้อนกลับ</button>
+            <button type="button" class="btn btn-primary" id="btn-next" onclick="app.nextStep()">ถัดไป</button>
+            <button type="button" class="btn btn-warning" id="btn-post-form" style="display:none;" onclick="app.postFormToDashboard()">📢 โพสต์ลงแดชบอร์ดกลาง</button>
+            <button type="button" class="btn btn-success" id="btn-save" style="display:none;" onclick="app.saveReport()">💾 บันทึก & สร้างรายงาน</button>
+          </div>
+
+        </form>
+      </div>
+    </section>
+
+    <!-- 3. A4 REPORT VIEW -->
+    <section id="view-report" class="app-view report-view" style="display: none;">
+      
+      <!-- Toolbar (Hidden on print) -->
+      <div class="report-toolbar no-print">
+        <div class="toolbar-left">
+          <button class="btn btn-secondary" onclick="app.switchView('dashboard')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            กลับหน้าหลัก
+          </button>
+          <span class="toolbar-status">🔎 ตัวอย่างรายงานขนาด A4</span>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-info" onclick="app.editCurrentReport()">
+            ✏️ แก้ไขข้อมูล
+          </button>
+          <button class="btn btn-warning" id="btn-post-toolbar" onclick="app.postCurrentToDashboard()">
+            📢 โพสต์ลงแดชบอร์ด
+          </button>
+          <button class="btn btn-info" id="btn-png-toolbar" onclick="app.exportPNG()">
+            🖼️ บันทึกเป็นรูปภาพ PNG
+          </button>
+          <button class="btn btn-success" id="btn-pdf-toolbar" onclick="app.exportPDF()">
+            📄 บันทึกเป็น PDF (jsPDF)
+          </button>
+          <button class="btn btn-primary" id="btn-print-toolbar" onclick="app.printReport()">
+            🖨️ สั่งพิมพ์รายงาน (พิมพ์/PDF บราวเซอร์)
+          </button>
+        </div>
+      </div>
+
+      <!-- A4 Page Container (Crucial for styling) -->
+      <div class="a4-page-wrapper">
+        <div id="a4-report-content" class="a4-page">
+          <!-- Rendered dynamically in app.js -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="toast-container no-print"></div>
+
+  <!-- EXTERNAL LIBRARIES (OFFLINE FRIENDLY) -->
+  <script src="html2canvas.min.js"></script>
+  <script src="jspdf.umd.min.js"></script>
+
+  <!-- APPLICATION LOGIC -->
+  <script src="app.js"></script>
+</body>
+</html>
