@@ -4,7 +4,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyBXQmnX4Q5Qm_KgvoDUeapSDplSv126H-Q",
   authDomain: "pkstudentcare-6cc57.firebaseapp.com",
-  databaseURL: "https://pkstudentcare-6cc57-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  databaseURL: "https://pkstudentcare-6cc57-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "pkstudentcare-6cc57",
   storageBucket: "pkstudentcare-6cc57.firebasestorage.app",
   messagingSenderId: "993494045553",
@@ -311,9 +311,9 @@ const app = {
     if (database) {
       try {
         appState.reports.forEach(report => {
-          // Only sync posted reports, ignore drafts and seed samples
-          if (report.isPosted && !report.isSample && report.reportId !== 'RPT-SAMPLE55') {
-            database.ref('reports/' + report.reportId).set(report);
+          // Only sync posted reports (including edited samples)
+          if (report.isPosted) {
+            database.ref('home_visits/' + report.reportId).set(report);
           }
         });
       } catch (e) {
@@ -328,7 +328,7 @@ const app = {
   syncReportsWithFirebase() {
     if (!database) return;
     try {
-      const reportsRef = database.ref('reports');
+      const reportsRef = database.ref('home_visits');
       reportsRef.on('value', snapshot => {
         const remoteData = snapshot.val();
         if (remoteData) {
@@ -1177,7 +1177,12 @@ const app = {
     // Save to State
     if (appState.editingReportId) {
       const idx = appState.reports.findIndex(r => r.reportId === reportId);
-      if (idx !== -1) appState.reports[idx] = reportData;
+      if (idx !== -1) {
+        const oldReport = appState.reports[idx];
+        if (oldReport.isSample) reportData.isSample = true;
+        if (oldReport.isHidden) reportData.isHidden = true;
+        appState.reports[idx] = reportData;
+      }
     } else {
       appState.reports.unshift(reportData);
     }
@@ -1247,7 +1252,7 @@ const app = {
       // Delete from Firebase Database if available
       if (database) {
         try {
-          database.ref('reports/' + reportId).remove();
+          database.ref('home_visits/' + reportId).remove();
         } catch (e) {
           console.error("Error removing report from Firebase Database:", e);
         }
