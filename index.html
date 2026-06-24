@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
   <!-- Style Sheet -->
-  <link rel="stylesheet" href="style.css?v=3.6">
+  <link rel="stylesheet" href="style.css?v=3.8">
 </head>
 <body>
 
@@ -230,10 +230,6 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="input-total-students">จำนวนนักเรียนทั้งหมดในห้อง <span class="required">*</span></label>
-                <input type="number" id="input-total-students" class="form-input" required min="1" placeholder="เช่น 35">
-              </div>
-              <div class="form-group">
                 <label class="form-label" for="input-visit-period-start">ระยะเวลาเยี่ยมบ้านเริ่มต้น</label>
                 <input type="text" id="input-visit-period-start" class="form-input readonly-input" required value="26 พฤษภาคม 2569" readonly>
               </div>
@@ -264,23 +260,36 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="input-visited-count">จำนวนนักเรียนทั้งหมดที่ดำเนินการเยี่ยมบ้าน <span class="required">*</span></label>
-                <input type="number" id="input-visited-count" class="form-input" required min="0">
+                <label class="form-label" for="input-total-students">จำนวนนักเรียนทั้งหมดในชั้นเรียน (คน) <span class="required">*</span></label>
+                <input type="number" id="input-total-students" class="form-input" required min="1" placeholder="เช่น 35">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="input-not-visited-count">ไม่ได้เยี่ยมบ้าน (คน) <span class="required">*</span></label>
+                <input type="number" id="input-not-visited-count" class="form-input" required min="0" placeholder="เช่น 0">
+                <div class="calc-help">
+                  ร้อยละ: <span class="auto-calc" id="calc-not-visited-percent">0.00%</span> ของนักเรียนทั้งหมด
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="input-visited-count">เยี่ยมบ้านเรียบร้อยแล้ว <span class="info-badge">คำนวณออโต้</span></label>
+                <input type="number" id="input-visited-count" class="form-input readonly-input" readonly placeholder="คำนวณออโต้">
                 <div class="calc-help">
                   ร้อยละ: <span class="auto-calc" id="calc-visited-percent">0.00%</span> ของนักเรียนทั้งหมด
                 </div>
               </div>
               
               <div class="form-group">
-                <label class="form-label" for="input-online-count">เยี่ยมบ้านรูปแบบออนไลน์ <span class="required">*</span></label>
-                <input type="number" id="input-online-count" class="form-input" required min="0">
+                <label class="form-label" for="input-online-count">เยี่ยมบ้านรูปแบบออนไลน์ (คน) <span class="required">*</span></label>
+                <input type="number" id="input-online-count" class="form-input" required min="0" placeholder="เช่น 0">
                 <div class="calc-help">
                   ร้อยละ: <span class="auto-calc" id="calc-online-percent">0%</span> ของที่เยี่ยมบ้านแล้ว
                 </div>
               </div>
 
               <div class="form-group">
-                <label class="form-label">เยี่ยมบ้านแบบ ณ ที่ตั้ง (ณ บ้านนักเรียน) <span class="info-badge">คำนวณออโต้</span></label>
+                <label class="form-label">เยี่ยมบ้าน ณ บ้านนักเรียน <span class="info-badge">คำนวณออโต้</span></label>
                 <div class="static-value-field">
                   <span id="display-inperson-count" class="bold-val">0</span> คน 
                   (<span id="calc-inperson-percent">0%</span> ของที่เยี่ยมบ้านแล้ว)
@@ -652,6 +661,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <!-- APPLICATION LOGIC -->
-  <script src="app.js?v=3.6"></script>
+  <script src="app.js?v=3.8"></script>
 </body>
 </html>

@@ -36,6 +36,15 @@
 - `[x]` Bump cache versions in index.html to v=3.5
 - `[x]` Convert family status donut charts in both A4 report and dashboard from CSS conic-gradient to inline SVGs to fix missing colors in PDF/image exports (v=3.6)
 - `[x]` Bump cache versions in index.html to v=3.6
+- `[x]` Add "not visited" students input field in Step 2 of the form (v=3.7)
+- `[x]` Implement bidirectional auto-sync calculation between visited and unvisited counts in app.js (v=3.7)
+- `[x]` Render unvisited count as 5th card in Section 1 of A4 report and update grid layouts (v=3.7)
+- `[x]` Sync with school-wide overview dashboard stats card and CSV export columns (v=3.7)
+- `[x]` Bump cache versions in index.html to v=3.7
+- `[x]` Rearrange Step 2 input fields layout to place total students first, then unvisited count, followed by read-only visited count, online count, and on-site count (v=3.8)
+- `[x]` Adjust Step 1 and Step 2 validation flows to prevent locking on Step 1 when total students input is moved to Step 2 (v=3.8)
+- `[x]` Update calculations logic in app.js for direct child count derivation and correct base percentage ratios (v=3.8)
+- `[x]` Bump cache versions in index.html to v=3.8
 
 
 

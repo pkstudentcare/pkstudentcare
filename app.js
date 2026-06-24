@@ -51,6 +51,7 @@ const appState = {
     stat_visitedCount: 35,
     stat_onlineCount: 5,
     stat_inPersonCount: 30,
+    stat_notVisitedCount: 0,
     family_complete: { count: 25, percent: 70 },
     family_separated: { count: 5, percent: 15 },
     family_withRelatives: { count: 4, percent: 10 },
@@ -394,6 +395,7 @@ const app = {
       'input-total-students',
       'input-visited-count',
       'input-online-count',
+      'input-not-visited-count',
       'input-family-complete',
       'input-family-separated',
       'input-family-with-relatives',
@@ -537,22 +539,25 @@ const app = {
       const semester = document.getElementById('input-semester').value;
       const year = document.getElementById('input-academic-year').value;
       const classLevel = document.getElementById('input-class-level').value.trim();
-      const totalStud = parseInt(document.getElementById('input-total-students').value) || 0;
       const advisor1 = document.getElementById('input-advisor-1').value.trim();
 
-      if (!school || !semester || !year || !classLevel || totalStud <= 0 || !advisor1) {
+      if (!school || !semester || !year || !classLevel || !advisor1) {
         isValid = false;
       }
     } else if (step === 2) {
       const totalStud = parseInt(document.getElementById('input-total-students').value) || 0;
       const visited = parseInt(document.getElementById('input-visited-count').value) || 0;
       const online = parseInt(document.getElementById('input-online-count').value) || 0;
+      const notVisited = parseInt(document.getElementById('input-not-visited-count').value) || 0;
 
-      if (visited > totalStud) {
-        document.getElementById('visit-validation-message').textContent = '⚠️ จำนวนนักเรียนที่เยี่ยมบ้านแล้ว ห้ามเกินจำนวนนักเรียนทั้งหมด';
+      if (totalStud <= 0) {
+        document.getElementById('visit-validation-message').textContent = '⚠️ กรุณากรอกจำนวนนักเรียนทั้งหมดในชั้นเรียน';
+        isValid = false;
+      } else if (notVisited > totalStud) {
+        document.getElementById('visit-validation-message').textContent = '⚠️ จำนวนนักเรียนที่ไม่ได้เยี่ยมบ้าน ห้ามเกินจำนวนนักเรียนทั้งหมดในชั้นเรียน';
         isValid = false;
       } else if (online > visited) {
-        document.getElementById('visit-validation-message').textContent = '⚠️ จำนวนเยี่ยมบ้านออนไลน์ ห้ามมากกว่าจำนวนนักเรียนที่เยี่ยมบ้านแล้ว';
+        document.getElementById('visit-validation-message').textContent = '⚠️ จำนวนเยี่ยมบ้านออนไลน์ ห้ามมากกว่าจำนวนนักเรียนที่ได้รับการเยี่ยมบ้านแล้ว';
         isValid = false;
       } else {
         document.getElementById('visit-validation-message').textContent = '';
@@ -664,6 +669,7 @@ const app = {
     // Step 2
     document.getElementById('input-visited-count').value = data.stat_visitedCount;
     document.getElementById('input-online-count').value = data.stat_onlineCount;
+    document.getElementById('input-not-visited-count').value = data.stat_notVisitedCount || 0;
 
     // Step 3
     document.getElementById('input-family-complete').value = data.family_complete.count;
@@ -738,6 +744,7 @@ const app = {
 
     document.getElementById('input-visited-count').value = report.stat_visitedCount;
     document.getElementById('input-online-count').value = report.stat_onlineCount;
+    document.getElementById('input-not-visited-count').value = report.stat_notVisitedCount !== undefined ? report.stat_notVisitedCount : (report.totalStudents - report.stat_visitedCount);
 
     document.getElementById('input-family-complete').value = report.family_complete.count;
     document.getElementById('input-family-separated').value = report.family_separated.count;
@@ -819,6 +826,7 @@ const app = {
 
     document.getElementById('input-visited-count').value = '';
     document.getElementById('input-online-count').value = '';
+    document.getElementById('input-not-visited-count').value = '';
 
     document.getElementById('input-family-complete').value = '';
     document.getElementById('input-family-separated').value = '';
@@ -893,20 +901,27 @@ const app = {
    */
   calculateFormStats() {
     const totalStudents = parseInt(document.getElementById('input-total-students').value) || 0;
-    const visitedCount = parseInt(document.getElementById('input-visited-count').value) || 0;
+    const notVisitedCount = parseInt(document.getElementById('input-not-visited-count').value) || 0;
     const onlineCount = parseInt(document.getElementById('input-online-count').value) || 0;
+
+    // Calculate visitedCount
+    const visitedCount = Math.max(0, totalStudents - notVisitedCount);
+    document.getElementById('input-visited-count').value = visitedCount;
+
+    // Calculate inPersonCount
+    const inPersonCount = Math.max(0, visitedCount - onlineCount);
+    document.getElementById('display-inperson-count').textContent = inPersonCount;
 
     // 1. Visit Stats percentages
     let visitedPercent = 0;
     let onlinePercent = 0;
-    let inPersonCount = 0;
     let inPersonPercent = 0;
+    let notVisitedPercent = 0;
 
     if (totalStudents > 0) {
       visitedPercent = (visitedCount / totalStudents) * 100;
+      notVisitedPercent = (notVisitedCount / totalStudents) * 100;
     }
-    
-    inPersonCount = Math.max(0, visitedCount - onlineCount);
     
     if (visitedCount > 0) {
       const visitTypesPcts = this.calculateExact100Percentages([onlineCount, inPersonCount], visitedCount);
@@ -919,6 +934,7 @@ const app = {
     document.getElementById('calc-online-percent').textContent = onlinePercent + '%';
     document.getElementById('display-inperson-count').textContent = inPersonCount;
     document.getElementById('calc-inperson-percent').textContent = inPersonPercent + '%';
+    document.getElementById('calc-not-visited-percent').textContent = notVisitedPercent.toFixed(2) + '%';
 
     // Placeholders updates
     document.querySelectorAll('.target-students-placeholder').forEach(el => {
@@ -1121,6 +1137,7 @@ const app = {
     const visitedCount = parseInt(document.getElementById('input-visited-count').value) || 0;
     const onlineCount = parseInt(document.getElementById('input-online-count').value) || 0;
     const inPersonCount = Math.max(0, visitedCount - onlineCount);
+    const notVisitedCount = parseInt(document.getElementById('input-not-visited-count').value) || 0;
 
     const complete = parseInt(document.getElementById('input-family-complete').value) || 0;
     const separated = parseInt(document.getElementById('input-family-separated').value) || 0;
@@ -1192,6 +1209,7 @@ const app = {
       stat_visitedCount: visitedCount,
       stat_onlineCount: onlineCount,
       stat_inPersonCount: inPersonCount,
+      stat_notVisitedCount: notVisitedCount,
       
       family_complete: { count: complete, percent: familyPcts[0] },
       family_separated: { count: separated, percent: familyPcts[1] },
@@ -1540,7 +1558,9 @@ const app = {
     const maxIncomeCount = Math.max(...data.incomeRanges.map(r => r.count), 1);
 
     // Render stats
+    const notVisitedCount = data.stat_notVisitedCount !== undefined ? data.stat_notVisitedCount : (data.totalStudents - data.stat_visitedCount);
     const visitedPercent = data.totalStudents > 0 ? (data.stat_visitedCount / data.totalStudents * 100).toFixed(1) : 0;
+    const notVisitedPercent = data.totalStudents > 0 ? (notVisitedCount / data.totalStudents * 100).toFixed(1) : 0;
     
     // Visit types percentages out of visited count as integers summing to exactly 100%
     const visitedCountVal = data.stat_visitedCount || 0;
@@ -1728,6 +1748,14 @@ const app = {
               <div class="stat-label">เยี่ยมบ้าน ณ บ้านนักเรียน</div>
               <div class="stat-number">${data.stat_inPersonCount}</div>
               <div class="stat-sub">${inPersonPercent}%</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: #fcedeb; color: var(--danger-red);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+              </div>
+              <div class="stat-label">ไม่ได้เยี่ยมบ้าน</div>
+              <div class="stat-number">${notVisitedCount}</div>
+              <div class="stat-sub">${notVisitedPercent}%</div>
             </div>
           </div>
         </div>
@@ -2012,6 +2040,7 @@ const app = {
     let totalVisited = 0;
     let totalOnline = 0;
     let totalInPerson = 0;
+    let totalNotVisited = 0;
 
     let familyComplete = 0;
     let familySeparated = 0;
@@ -2032,6 +2061,7 @@ const app = {
       totalVisited += report.stat_visitedCount || 0;
       totalOnline += report.stat_onlineCount || 0;
       totalInPerson += report.stat_inPersonCount || 0;
+      totalNotVisited += report.stat_notVisitedCount !== undefined ? (report.stat_notVisitedCount || 0) : (report.totalStudents - report.stat_visitedCount);
 
       familyComplete += (report.family_complete && report.family_complete.count) || 0;
       familySeparated += (report.family_separated && report.family_separated.count) || 0;
@@ -2076,6 +2106,7 @@ const app = {
 
     // Visit statistics overall percentages
     const overallVisitedPercent = totalStudents > 0 ? ((totalVisited / totalStudents) * 100) : 0;
+    const overallNotVisitedPercent = totalStudents > 0 ? ((totalNotVisited / totalStudents) * 100) : 0;
     
     const visitTypesPcts = this.calculateExact100Percentages([totalOnline, totalInPerson], totalVisited);
     const overallOnlinePercent = visitTypesPcts[0];
@@ -2172,6 +2203,14 @@ const app = {
             <span class="overview-stat-label">เยี่ยมบ้านออนไลน์</span>
             <span class="overview-stat-number">${totalOnline} <span style="font-size:14px; font-weight:500;">คน</span></span>
             <span class="overview-stat-sub" style="color:var(--gold-accent);">คิดเป็น ${overallOnlinePercent}% ของที่เยี่ยมบ้านแล้ว</span>
+          </div>
+        </div>
+        <div class="overview-stat-card" style="border-bottom-color: var(--danger-red);">
+          <div class="overview-stat-icon" style="background-color:#fcedeb; color:var(--danger-red);">❌</div>
+          <div class="overview-stat-info">
+            <span class="overview-stat-label">ไม่ได้เยี่ยมบ้าน</span>
+            <span class="overview-stat-number">${totalNotVisited} <span style="font-size:14px; font-weight:500;">คน</span></span>
+            <span class="overview-stat-sub" style="color:var(--danger-red);">คิดเป็น ${overallNotVisitedPercent.toFixed(1)}% ของทั้งหมด</span>
           </div>
         </div>
       </div>
@@ -2281,6 +2320,7 @@ const app = {
       'เยี่ยมบ้านแล้ว (คน)',
       'เยี่ยมบ้านออนไลน์ (คน)',
       'เยี่ยมบ้านที่บ้าน (คน)',
+      'ไม่ได้เยี่ยมบ้าน (คน)',
       'ครอบครัวอยู่ร่วมกัน (คน)',
       'ครอบครัวหย่าร้าง (คน)',
       'ครอบครัวอยู่กับญาติ (คน)',
@@ -2312,6 +2352,7 @@ const app = {
       const advisors = report.advisorTeachers ? report.advisorTeachers.join(' / ') : '';
       const status = report.isPosted ? 'โพสต์แล้ว (แอดมินดึงได้)' : 'บันทึกในเครื่อง';
       
+      const notVisitedVal = report.stat_notVisitedCount !== undefined ? report.stat_notVisitedCount : (report.totalStudents - report.stat_visitedCount);
       const row = [
         report.reportId,
         new Date(report.createdAt).toLocaleDateString('th-TH'),
@@ -2323,6 +2364,7 @@ const app = {
         report.stat_visitedCount,
         report.stat_onlineCount,
         report.stat_inPersonCount,
+        notVisitedVal,
         report.family_complete.count,
         report.family_separated.count,
         report.family_withRelatives.count,

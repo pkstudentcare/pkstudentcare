@@ -1189,7 +1189,7 @@ body {
 /* Stats Cards (Section 1) */
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   height: 75px; /* Optimized to balance page layout */
   margin-bottom: 6px;
