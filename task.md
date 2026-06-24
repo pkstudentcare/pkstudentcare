@@ -1,0 +1,41 @@
+- `[x]` Update index.html with cache-buster `?v=2.8` and update wizard labels
+- `[x]` Add income bar color gradient classes to style.css (including yellow gradient)
+- `[x]` Implement Largest Remainder Method for percentages in app.js
+  - `[x]` Update wizard Step 2 calculations (Online/In-Person percentages out of visited count as integers)
+  - `[x]` Update wizard Step 4 calculations (Household Income percentages as integers)
+  - `[x]` Update saveReport() logic for integer percentages
+  - `[x]` Update renderReportContent() dynamic percentages (Stats, Family Status, Household Income) and apply custom colored bar classes
+  - `[x]` Update renderDashboardOverview() dynamic percentages and aggregated issue details
+- `[x]` Redesign Layout: Remove old Section 5 (แนวทางช่วยเหลือ/พัฒนาร่วมกัน)
+- `[x]` Move Summary/Discussion section to Section 5's position, renamed to "5 สรุปผล"
+- `[x]` Expand Photos section to full-width (Grid Row 3) and increase photos from 6 to 12 in a 6x2 grid
+- `[x]` Reduce wizard form steps from 7 to 6, removing the Action Plans step
+- `[x]` Update photo upload slots in the form from 6 to 12
+- `[x]` Update income bar color mapping: <10,000 Baht -> Red, 10,000-30,000 Baht -> Orange, 30,000-50,000 Baht -> Yellow, >50,000 Baht -> Green
+- `[x]` Fix text truncation/overflow on Section 4 item 5 (Top 5 Issues) by removing fixed list height and utilizing flexbox, increasing row height to 165px
+- `[x]` Move metadata details (Class Level, Visit Period, Advisors) to float as bubbles inside the Header image, removing the old standalone below-header meta bar
+- `[x]` Update header image background in style.css to use the new uploaded banner image (`header_bg.jpg`)
+- `[x]` Verify changes locally using manual checks
+- `[x]` Create walkthrough.md summarizing modifications
+- `[x]` Remove student count parenthesis from "ระดับชั้น" bubble in app.js
+- `[x]` Increase font size (to 10.5px) and bold all text in metadata bubbles in style.css
+- `[x]` Fix Section 1 bottom border cutoff by changing height to 127px in app.js
+- `[x]` Move signature box up by reducing margin-top to 4px and adding margin-bottom: 16px to .report-footer in style.css
+- `[x]` Bump cache versions in index.html to v=2.9
+- `[x]` Fix metadata bubbles overlapping banner background text by expanding container width, reducing gaps, and optimizing font size to 9.2px bold (v=3.0)
+- `[x]` Bump cache versions in index.html to v=3.0
+- `[x]` Implement dynamic font-size calculation in app.js and CSS variable binding in style.css to dynamically scale bubble text size up to 10.5px bold on a single line depending on character length (v=3.1)
+- `[x]` Bump cache versions in index.html to v=3.1
+- `[x]` Expand signature box (.report-footer) vertical padding to 16px 20px to utilize empty space, and increase signature text and role font-sizes (to 11px and 10px) to make them clearly visible (v=3.2)
+- `[x]` Bump cache versions in index.html to v=3.2
+- `[x]` Fix A4 print layout cutoff by scoping mobile responsive chart styles to .overview-charts-grid, and enable print/export buttons on the toolbar by default (v=3.3)
+- `[x]` Bump cache versions in index.html to v=3.3
+- `[x]` Fix PDF and image download failures under file:// protocol by inlining local image assets (header_bg.jpg and pklogo.png) as Base64 Data URIs in style.css (v=3.4)
+- `[x]` Bump cache versions in index.html to v=3.4
+- `[x]` Expand A4 photo grid item sizes and placeholder icons to fit Section 6 card height perfectly without leaving extra vertical whitespace (v=3.5)
+- `[x]` Bump cache versions in index.html to v=3.5
+- `[x]` Convert family status donut charts in both A4 report and dashboard from CSS conic-gradient to inline SVGs to fix missing colors in PDF/image exports (v=3.6)
+- `[x]` Bump cache versions in index.html to v=3.6
+
+
+

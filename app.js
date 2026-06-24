@@ -33,7 +33,7 @@ const appState = {
   userRole: null, // 'teacher', 'admin', or null (not logged in)
   currentView: 'dashboard', // 'dashboard', 'form', 'report'
   currentStep: 1,
-  totalSteps: 7,
+  totalSteps: 6,
   reports: [], // List of saved reports
   currentReportId: null, // ID of the report being viewed or edited
   editingReportId: null, // ID of the report currently being edited (null for new)
@@ -75,7 +75,7 @@ const appState = {
       'จัดหาอุปกรณ์การเรียนเพิ่มเติมผ่านโครงการกองทุนสนับสนุนการศึกษา',
       'วางแผนเยี่ยมบ้านซ้ำหรือประสานการพูดคุยกับผู้ปกครองรายบุคคลอย่างต่อเนื่อง'
     ],
-    photos: ['', '', '', '', '', '', '', ''], // Base64 or URLs (8 slots)
+    photos: ['', '', '', '', '', '', '', '', '', '', '', ''], // Base64 or URLs (12 slots)
     summaryText: 'จากการดำเนินงานออกเยี่ยมบ้านนักเรียนชั้นมัธยมศึกษาปีที่ 1/3 จำนวน 35 คน ตามระบบดูแลช่วยเหลือนักเรียนของโรงเรียนพระโขนงพิทยาลัย พบว่านักเรียนส่วนใหญ่ได้รับการดูแลเอาใจใส่จากผู้ปกครองเป็นอย่างดี อย่างไรก็ตามยังมีนักเรียนบางส่วนที่ประสบปัญหาด้านเศรษฐกิจและการเรียน ซึ่งโรงเรียนได้ร่วมมือกับผู้ปกครองจัดเตรียมมาตรการช่วยเหลือ เช่น การสนับสนุนทุนการศึกษา การให้คำปรึกษาทางจิตวิทยา และการวางแผนติดตามผลการพัฒนาเป็นรายบุคคล เพื่อให้นักเรียนสามารถเรียนรู้ได้อย่างมีประสิทธิภาพและเต็มตามศักยภาพ',
     isPosted: false
   }
@@ -610,7 +610,7 @@ const app = {
           document.getElementById('issue-validation-message').textContent = '';
         }
       }
-    } else if (step === 7) {
+    } else if (step === 6) {
       const summary = document.getElementById('input-summary-text').value.trim();
       if (!summary) {
         isValid = false;
@@ -697,9 +697,6 @@ const app = {
     }
 
     // Step 6
-    this.renderDynamicListForm('actionplans-list-inputs', data.actionPlans);
-
-    // Step 7
     document.getElementById('input-summary-text').value = data.summaryText;
 
     // Photos
@@ -775,11 +772,11 @@ const app = {
 
     document.getElementById('input-summary-text').value = report.summaryText;
 
-    // Support size migration if report is from older version with only 6 slots
-    this.photoPreviewArray = Array(8).fill('');
+    // Support size migration if report is from older version with only 6 or 8 slots
+    this.photoPreviewArray = Array(12).fill('');
     if (report.photos) {
       report.photos.forEach((photo, idx) => {
-        if (idx < 8) this.photoPreviewArray[idx] = photo;
+        if (idx < 12) this.photoPreviewArray[idx] = photo;
       });
     }
     this.updatePhotoPreviews();
@@ -841,11 +838,14 @@ const app = {
       countField.value = '';
     });
 
-    // Clear dynamic inputs
-    document.getElementById('actionplans-list-inputs').innerHTML = '';
-    this.addDynamicItem('actionplans-list-inputs');
+    // Clear dynamic inputs if present
+    const actionplansContainer = document.getElementById('actionplans-list-inputs');
+    if (actionplansContainer) {
+      actionplansContainer.innerHTML = '';
+      this.addDynamicItem('actionplans-list-inputs');
+    }
 
-    this.photoPreviewArray = ['', '', '', '', '', '', '', ''];
+    this.photoPreviewArray = Array(12).fill('');
     this.updatePhotoPreviews();
 
     document.getElementById('input-summary-text').value = '';
@@ -864,6 +864,31 @@ const app = {
   },
 
   /**
+   * Calculate rounded integer percentages that sum to exactly 100%
+   * using the Largest Remainder Method (Hare-Niemeyer)
+   */
+  calculateExact100Percentages(counts, total) {
+    if (!total || total <= 0) {
+      return counts.map(() => 0);
+    }
+    const exacts = counts.map(c => (c / total) * 100);
+    const floors = exacts.map(e => Math.floor(e));
+    const remainders = exacts.map((e, idx) => ({ remainder: e - floors[idx], index: idx }));
+    
+    let sum = floors.reduce((a, b) => a + b, 0);
+    let diff = 100 - sum;
+    
+    // Sort by remainders descending
+    remainders.sort((a, b) => b.remainder - a.remainder);
+    
+    // Distribute the difference to the ones with the largest remainders
+    for (let i = 0; i < diff; i++) {
+      floors[remainders[i].index] += 1;
+    }
+    return floors;
+  },
+
+  /**
    * Calculate form statistics on input changes
    */
   calculateFormStats() {
@@ -879,17 +904,21 @@ const app = {
 
     if (totalStudents > 0) {
       visitedPercent = (visitedCount / totalStudents) * 100;
-      onlinePercent = (onlineCount / totalStudents) * 100;
-      
-      inPersonCount = Math.max(0, visitedCount - onlineCount);
-      inPersonPercent = (inPersonCount / totalStudents) * 100;
+    }
+    
+    inPersonCount = Math.max(0, visitedCount - onlineCount);
+    
+    if (visitedCount > 0) {
+      const visitTypesPcts = this.calculateExact100Percentages([onlineCount, inPersonCount], visitedCount);
+      onlinePercent = visitTypesPcts[0];
+      inPersonPercent = visitTypesPcts[1];
     }
 
     // Set auto-calc in DOM
     document.getElementById('calc-visited-percent').textContent = visitedPercent.toFixed(2) + '%';
-    document.getElementById('calc-online-percent').textContent = onlinePercent.toFixed(2) + '%';
+    document.getElementById('calc-online-percent').textContent = onlinePercent + '%';
     document.getElementById('display-inperson-count').textContent = inPersonCount;
-    document.getElementById('calc-inperson-percent').textContent = inPersonPercent.toFixed(2) + '%';
+    document.getElementById('calc-inperson-percent').textContent = inPersonPercent + '%';
 
     // Placeholders updates
     document.querySelectorAll('.target-students-placeholder').forEach(el => {
@@ -905,15 +934,16 @@ const app = {
     const familySum = complete + separated + withRelatives + other;
     const familyDiff = visitedCount - familySum;
 
-    const completePct = visitedCount > 0 ? (complete / visitedCount * 100) : 0;
-    const separatedPct = visitedCount > 0 ? (separated / visitedCount * 100) : 0;
-    const relativesPct = visitedCount > 0 ? (withRelatives / visitedCount * 100) : 0;
-    const otherPct = visitedCount > 0 ? (other / visitedCount * 100) : 0;
+    const familyPcts = this.calculateExact100Percentages([complete, separated, withRelatives, other], visitedCount);
+    const completePct = familyPcts[0];
+    const separatedPct = familyPcts[1];
+    const relativesPct = familyPcts[2];
+    const otherPct = familyPcts[3];
 
-    document.getElementById('calc-family-complete-percent').textContent = completePct.toFixed(0) + '%';
-    document.getElementById('calc-family-separated-percent').textContent = separatedPct.toFixed(0) + '%';
-    document.getElementById('calc-family-relatives-percent').textContent = relativesPct.toFixed(0) + '%';
-    document.getElementById('calc-family-other-percent').textContent = otherPct.toFixed(0) + '%';
+    document.getElementById('calc-family-complete-percent').textContent = completePct + '%';
+    document.getElementById('calc-family-separated-percent').textContent = separatedPct + '%';
+    document.getElementById('calc-family-relatives-percent').textContent = relativesPct + '%';
+    document.getElementById('calc-family-other-percent').textContent = otherPct + '%';
 
     const familyStatusEl = document.getElementById('family-sum-status');
     if (familyStatusEl) {
@@ -937,15 +967,16 @@ const app = {
     const incomeSum = tier1 + tier2 + tier3 + tier4;
     const incomeDiff = visitedCount - incomeSum;
 
-    const t1Pct = visitedCount > 0 ? (tier1 / visitedCount * 100) : 0;
-    const t2Pct = visitedCount > 0 ? (tier2 / visitedCount * 100) : 0;
-    const t3Pct = visitedCount > 0 ? (tier3 / visitedCount * 100) : 0;
-    const t4Pct = visitedCount > 0 ? (tier4 / visitedCount * 100) : 0;
+    const incomePcts = this.calculateExact100Percentages([tier1, tier2, tier3, tier4], visitedCount);
+    const t1Pct = incomePcts[0];
+    const t2Pct = incomePcts[1];
+    const t3Pct = incomePcts[2];
+    const t4Pct = incomePcts[3];
 
-    document.getElementById('calc-income-tier1-percent').textContent = t1Pct.toFixed(2) + '%';
-    document.getElementById('calc-income-tier2-percent').textContent = t2Pct.toFixed(2) + '%';
-    document.getElementById('calc-income-tier3-percent').textContent = t3Pct.toFixed(2) + '%';
-    document.getElementById('calc-income-tier4-percent').textContent = t4Pct.toFixed(2) + '%';
+    document.getElementById('calc-income-tier1-percent').textContent = t1Pct + '%';
+    document.getElementById('calc-income-tier2-percent').textContent = t2Pct + '%';
+    document.getElementById('calc-income-tier3-percent').textContent = t3Pct + '%';
+    document.getElementById('calc-income-tier4-percent').textContent = t4Pct + '%';
 
     const incomeStatusEl = document.getElementById('income-sum-status');
     if (incomeStatusEl) {
@@ -965,7 +996,7 @@ const app = {
    * Dynamic Input list logic
    */
   initDynamicListListeners() {
-    this.photoPreviewArray = ['', '', '', '', '', '', '', ''];
+    this.photoPreviewArray = Array(12).fill('');
   },
 
   /**
@@ -1143,6 +1174,8 @@ const app = {
         finalPosted = appState.currentReport.isPosted || false;
       }
     }
+    const familyPcts = this.calculateExact100Percentages([complete, separated, withRelatives, other], visitedCount);
+    const incomePcts = this.calculateExact100Percentages([tier1, tier2, tier3, tier4], visitedCount);
 
     const reportData = {
       reportId,
@@ -1160,16 +1193,16 @@ const app = {
       stat_onlineCount: onlineCount,
       stat_inPersonCount: inPersonCount,
       
-      family_complete: { count: complete, percent: visitedCount > 0 ? Math.round(complete / visitedCount * 100) : 0 },
-      family_separated: { count: separated, percent: visitedCount > 0 ? Math.round(separated / visitedCount * 100) : 0 },
-      family_withRelatives: { count: withRelatives, percent: visitedCount > 0 ? Math.round(withRelatives / visitedCount * 100) : 0 },
-      family_other: { count: other, percent: visitedCount > 0 ? Math.round(other / visitedCount * 100) : 0 },
+      family_complete: { count: complete, percent: familyPcts[0] },
+      family_separated: { count: separated, percent: familyPcts[1] },
+      family_withRelatives: { count: withRelatives, percent: familyPcts[2] },
+      family_other: { count: other, percent: familyPcts[3] },
 
       incomeRanges: [
-        { label: 'ต่ำกว่า 10,000 บาท', count: tier1, percent: visitedCount > 0 ? (tier1 / visitedCount * 100) : 0 },
-        { label: '10,000 – 30,000 บาท', count: tier2, percent: visitedCount > 0 ? (tier2 / visitedCount * 100) : 0 },
-        { label: '30,000 – 50,000 บาท', count: tier3, percent: visitedCount > 0 ? (tier3 / visitedCount * 100) : 0 },
-        { label: 'มากกว่า 50,000 บาท', count: tier4, percent: visitedCount > 0 ? (tier4 / visitedCount * 100) : 0 }
+        { label: 'ต่ำกว่า 10,000 บาท', count: tier1, percent: incomePcts[0] },
+        { label: '10,000 – 30,000 บาท', count: tier2, percent: incomePcts[1] },
+        { label: '30,000 – 50,000 บาท', count: tier3, percent: incomePcts[2] },
+        { label: 'มากกว่า 50,000 บาท', count: tier4, percent: incomePcts[3] }
       ],
       
       topIssues,
@@ -1310,9 +1343,9 @@ const app = {
    * Action: Post report from form Step 7 before saving
    */
   postFormToDashboard() {
-    // Validate step 7 before posting
-    if (!this.validateStep(7)) {
-      this.showToast('กรุณากรอกสรุปภาพรวมในขั้นตอนที่ 7 ให้ถูกต้องก่อนทำการโพสต์', 'error');
+    // Validate step 6 before posting
+    if (!this.validateStep(6)) {
+      this.showToast('กรุณากรอกสรุปภาพรวมในขั้นตอนที่ 6 ให้ถูกต้องก่อนทำการโพสต์', 'error');
       return;
     }
 
@@ -1325,8 +1358,8 @@ const app = {
       appState.currentReport.isPosted = true;
     }
     
-    // Refresh button states in step 7
-    this.goToStep(7);
+    // Refresh button states in step 6
+    this.goToStep(6);
     
     // Show simulated upload progress toast
     this.showToast('กำลังเชื่อมต่อคลาวด์กลางและส่งข้อมูลดิบสู่ฐานข้อมูลแอดมิน...', 'info');
@@ -1476,31 +1509,44 @@ const app = {
     // Reset A4 Content
     container.innerHTML = '';
 
-    // Calculate dynamic values for conic gradient
-    const completePercent = data.family_complete.percent;
-    const separatedPercent = data.family_separated.percent;
-    const relativesPercent = data.family_withRelatives.percent;
-    const otherPercent = data.family_other.percent;
+    // Calculate dynamic values for SVG Donut Chart using Largest Remainder Method
+    const totalVisited = data.stat_visitedCount || 1;
+    const familyPcts = this.calculateExact100Percentages([
+      (data.family_complete && data.family_complete.count) || 0,
+      (data.family_separated && data.family_separated.count) || 0,
+      (data.family_withRelatives && data.family_withRelatives.count) || 0,
+      (data.family_other && data.family_other.count) || 0
+    ], totalVisited);
+    const completePercent = familyPcts[0];
+    const separatedPercent = familyPcts[1];
+    const relativesPercent = familyPcts[2];
+    const otherPercent = familyPcts[3];
 
-    const slice1 = completePercent;
-    const slice2 = slice1 + separatedPercent;
-    const slice3 = slice2 + relativesPercent;
-    
-    // Conic gradient style for family status donut chart
-    const donutGradient = `conic-gradient(
-      #2B5EA7 0% ${slice1}%, 
-      #5B9BD5 ${slice1}% ${slice2}%, 
-      #A5C8E1 ${slice2}% ${slice3}%, 
-      #E8B54D ${slice3}% 100%
-    )`;
+    // SVG parameters for 95px diameter donut chart (outer radius 47.5, inner radius 27.5)
+    // Stroke radius: (47.5 + 27.5) / 2 = 37.5. Stroke width: 47.5 - 27.5 = 20.
+    // Circumference: 2 * Math.PI * 37.5 = 235.62
+    const circ = 235.62;
+    const len1 = (circ * completePercent) / 100;
+    const len2 = (circ * separatedPercent) / 100;
+    const len3 = (circ * relativesPercent) / 100;
+    const len4 = (circ * otherPercent) / 100;
+
+    const offset1 = 0;
+    const offset2 = -len1;
+    const offset3 = -(len1 + len2);
+    const offset4 = -(len1 + len2 + len3);
 
     // Max count for scaling the horizontal income bars
     const maxIncomeCount = Math.max(...data.incomeRanges.map(r => r.count), 1);
 
     // Render stats
     const visitedPercent = data.totalStudents > 0 ? (data.stat_visitedCount / data.totalStudents * 100).toFixed(1) : 0;
-    const onlinePercent = data.totalStudents > 0 ? (data.stat_onlineCount / data.totalStudents * 100).toFixed(1) : 0;
-    const inPersonPercent = data.totalStudents > 0 ? (data.stat_inPersonCount / data.totalStudents * 100).toFixed(1) : 0;
+    
+    // Visit types percentages out of visited count as integers summing to exactly 100%
+    const visitedCountVal = data.stat_visitedCount || 0;
+    const visitTypesPcts = this.calculateExact100Percentages([data.stat_onlineCount || 0, data.stat_inPersonCount || 0], visitedCountVal);
+    const onlinePercent = visitTypesPcts[0];
+    const inPersonPercent = visitTypesPcts[1];
 
     // Render top issues list
     let issuesHtml = '';
@@ -1534,23 +1580,36 @@ const app = {
     }
 
     // Render Income bars
+    const incomePcts = this.calculateExact100Percentages(
+      data.incomeRanges.map(r => r.count || 0),
+      data.stat_visitedCount || 1
+    );
+
     let incomeBarsHtml = '';
-    data.incomeRanges.forEach(income => {
+    data.incomeRanges.forEach((income, idx) => {
       const fillPercent = (income.count / maxIncomeCount) * 100;
+      const incomePercent = incomePcts[idx];
+      
+      // Determine color class based on index
+      let colorClass = 'income-red';
+      if (idx === 1) colorClass = 'income-orange';
+      else if (idx === 2) colorClass = 'income-yellow';
+      else if (idx === 3) colorClass = 'income-green';
+
       incomeBarsHtml += `
         <div class="bar-row">
           <span class="bar-label" title="${income.label}">${income.label}</span>
           <div class="bar-track">
-            <div class="bar-fill" style="width: ${fillPercent}%;"></div>
+            <div class="bar-fill ${colorClass}" style="width: ${fillPercent}%;"></div>
           </div>
-          <span class="bar-value">${income.count} ครอบครัว (${income.percent.toFixed(1)}%)</span>
+          <span class="bar-value">${income.count} ครอบครัว (${incomePercent}%)</span>
         </div>
       `;
     });
 
     // Render Photos Grid
     let photoGridHtml = '';
-    for (let idx = 0; idx < 8; idx++) {
+    for (let idx = 0; idx < 12; idx++) {
       const photo = data.photos && data.photos[idx];
       if (photo) {
         photoGridHtml += `
@@ -1591,19 +1650,26 @@ const app = {
         statusText.style.color = 'var(--success-green)';
       }
     } else {
-      if (printBtn) printBtn.disabled = true;
-      if (pdfBtn) pdfBtn.disabled = true;
-      if (pngBtn) pngBtn.disabled = true;
+      if (printBtn) printBtn.disabled = false;
+      if (pdfBtn) pdfBtn.disabled = false;
+      if (pngBtn) pngBtn.disabled = false;
       if (postToolbarBtn) {
         postToolbarBtn.innerHTML = '📢 โพสต์ลงแดชบอร์ด';
         postToolbarBtn.className = 'btn btn-warning';
         postToolbarBtn.disabled = false;
       }
       if (statusText) {
-        statusText.innerHTML = '⚠️ กรุณากดโพสต์ลงแดชบอร์ดก่อนพิมพ์หรือส่งออก';
-        statusText.style.color = 'var(--danger-red)';
+        statusText.innerHTML = '💡 แนะนำให้กดโพสต์ลงแดชบอร์ดเพื่อบันทึกข้อมูลก่อนสั่งพิมพ์/ส่งออก';
+        statusText.style.color = '#e67e22';
       }
     }
+
+    // Calculate dynamic metadata bubble font size to fit single line without overlapping header text
+    const classLevelStr = data.classLevel || '';
+    const teachersStr = (data.advisorTeachers || []).join(', ');
+    const dateStr = '26 พ.ค. 69 – 30 มิ.ย. 69';
+    const totalChars = classLevelStr.length + teachersStr.length + dateStr.length + 30; // 30 is for label and icon chars
+    const bubbleFontSize = Math.min(10.5, Math.max(8.0, 1100 / totalChars)).toFixed(1);
 
     // Build overall A4 Template HTML
     container.innerHTML = `
@@ -1615,66 +1681,71 @@ const app = {
 
       <!-- REPORT HEADER -->
       <div class="report-header">
-        <!-- Displayed via CSS background: header_bg.png -->
-      </div>
-      
-      <!-- Metadata summary bar -->
-      <div class="report-meta-bar">
-        <div class="report-meta-item">📚 ระดับชั้น: <strong>${data.classLevel}</strong> (นักเรียนทั้งหมด ${data.totalStudents} คน)</div>
-        <div class="report-meta-item">📅 ระยะเวลา: <strong>26 พ.ค. 69 – 30 มิ.ย. 69</strong></div>
-        <div class="report-meta-item">👨‍🏫 ครูที่ปรึกษา: <strong>${data.advisorTeachers.join(', ')}</strong></div>
+        <div class="report-meta-bubbles" style="--bubble-font-size: ${bubbleFontSize}px;">
+          <div class="meta-bubble">📚 ระดับชั้น: <strong>${data.classLevel}</strong></div>
+          <div class="meta-bubble">📅 ระยะเวลา: <strong>26 พ.ค. 69 – 30 มิ.ย. 69</strong></div>
+          <div class="meta-bubble">👨‍🏫 ครูที่ปรึกษา: <strong>${data.advisorTeachers.join(', ')}</strong></div>
+        </div>
       </div>
 
       <!-- REPORT BODY -->
       <div class="report-body">
         
         <!-- Section 1: Stats -->
-        <div class="section-title">
-          <span class="section-num">1</span> สถิติผลการออกเยี่ยมบ้านนักเรียน
-        </div>
-        <div class="stats-row">
-          <div class="stat-card">
-            <div class="stat-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            </div>
-            <div class="stat-label">นักเรียนทั้งหมดในห้อง</div>
-            <div class="stat-number">${data.totalStudents}</div>
-            <div class="stat-sub">คน</div>
+        <div class="report-card" style="margin-bottom: 6px; height: 127px;">
+          <div class="section-title">
+            <span class="section-num">1</span> สถิติผลการออกเยี่ยมบ้านนักเรียน
           </div>
-          <div class="stat-card">
-            <div class="stat-icon" style="background-color: #e8f8f5; color: var(--success-green);">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </div>
+              <div class="stat-label">นักเรียนทั้งหมดในห้อง</div>
+              <div class="stat-number">${data.totalStudents}</div>
+              <div class="stat-sub">คน</div>
             </div>
-            <div class="stat-label">เยี่ยมบ้านเรียบร้อยแล้ว</div>
-            <div class="stat-number">${data.stat_visitedCount}</div>
-            <div class="stat-sub">${visitedPercent}%</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon" style="background-color: #ebf5fb; color: var(--light-blue);">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: #e8f8f5; color: var(--success-green);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <div class="stat-label">เยี่ยมบ้านเรียบร้อยแล้ว</div>
+              <div class="stat-number">${data.stat_visitedCount}</div>
+              <div class="stat-sub">${visitedPercent}%</div>
             </div>
-            <div class="stat-label">เยี่ยมบ้านรูปแบบออนไลน์</div>
-            <div class="stat-number">${data.stat_onlineCount}</div>
-            <div class="stat-sub">${onlinePercent}%</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon" style="background-color: #fef9e7; color: var(--gold-accent);">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: #ebf5fb; color: var(--light-blue);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              </div>
+              <div class="stat-label">เยี่ยมบ้านรูปแบบออนไลน์</div>
+              <div class="stat-number">${data.stat_onlineCount}</div>
+              <div class="stat-sub">${onlinePercent}%</div>
             </div>
-            <div class="stat-label">เยี่ยมบ้าน ณ บ้านนักเรียน</div>
-            <div class="stat-number">${data.stat_inPersonCount}</div>
-            <div class="stat-sub">${inPersonPercent}%</div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background-color: #fef9e7; color: var(--gold-accent);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </div>
+              <div class="stat-label">เยี่ยมบ้าน ณ บ้านนักเรียน</div>
+              <div class="stat-number">${data.stat_inPersonCount}</div>
+              <div class="stat-sub">${inPersonPercent}%</div>
+            </div>
           </div>
         </div>
 
         <!-- Row Grid 1: Family (Pie/Donut) & Income (Bars) -->
         <div class="report-grid grid-row-1">
-          <div>
+          <div class="report-card">
             <div class="section-title">
               <span class="section-num">2</span> สถานภาพทางครอบครัว
             </div>
             <div class="donut-chart-container">
-              <div class="donut-chart" style="background: ${donutGradient};">
+              <div class="donut-chart">
+                <svg width="95" height="95" viewBox="0 0 95 95" style="display: block;">
+                  <circle cx="47.5" cy="47.5" r="37.5" fill="none" stroke="#2B5EA7" stroke-width="20" stroke-dasharray="${len1} ${circ}" stroke-dashoffset="${offset1}" transform="rotate(-90 47.5 47.5)" />
+                  <circle cx="47.5" cy="47.5" r="37.5" fill="none" stroke="#5B9BD5" stroke-width="20" stroke-dasharray="${len2} ${circ}" stroke-dashoffset="${offset2}" transform="rotate(-90 47.5 47.5)" />
+                  <circle cx="47.5" cy="47.5" r="37.5" fill="none" stroke="#A5C8E1" stroke-width="20" stroke-dasharray="${len3} ${circ}" stroke-dashoffset="${offset3}" transform="rotate(-90 47.5 47.5)" />
+                  <circle cx="47.5" cy="47.5" r="37.5" fill="none" stroke="#E8B54D" stroke-width="20" stroke-dasharray="${len4} ${circ}" stroke-dashoffset="${offset4}" transform="rotate(-90 47.5 47.5)" />
+                </svg>
                 <div class="donut-hole">
                   <span class="donut-value">${completePercent}%</span>
                   <span class="donut-label">อยู่ร่วมกัน</span>
@@ -1688,7 +1759,7 @@ const app = {
               </ul>
             </div>
           </div>
-          <div>
+          <div class="report-card">
             <div class="section-title">
               <span class="section-num">3</span> สภาพเศรษฐกิจครัวเรือน (รายได้/เดือน)
             </div>
@@ -1698,9 +1769,9 @@ const app = {
           </div>
         </div>
 
-        <!-- Row Grid 2: Issues (Top 5) & Action Plans -->
+        <!-- Row Grid 2: Issues (Top 5) & Summary (Section 5) -->
         <div class="report-grid grid-row-2">
-          <div>
+          <div class="report-card">
             <div class="section-title">
               <span class="section-num">4</span> ปัญหา/อุปสรรคที่พบมากสุด 5 อันดับ
             </div>
@@ -1708,30 +1779,24 @@ const app = {
               ${issuesHtml}
             </div>
           </div>
-          <div>
+          <div class="report-card summary-card" style="height: 100%;">
             <div class="section-title">
-              <span class="section-num">5</span> แนวทางช่วยเหลือ/พัฒนาร่วมกัน
+              <span class="section-num">5</span> สรุปผล
             </div>
-            <ul class="action-list">
-              ${actionsHtml}
-            </ul>
+            <p>${data.summaryText}</p>
           </div>
         </div>
 
-        <!-- Full-Width Section 6: Photos Grid (4x2 layout, 8 slots) -->
-        <div class="full-width-section">
-          <div class="section-title">
-            <span class="section-num">6</span> ภาพกิจกรรมการออกเยี่ยมบ้านนักเรียน
+        <!-- Row Grid 3: Section 6 Photos (Full Width) -->
+        <div class="report-grid grid-row-3">
+          <div class="report-card photos-card" style="grid-column: span 2; height: 100%;">
+            <div class="section-title">
+              <span class="section-num">6</span> ภาพกิจกรรมการเยี่ยมบ้าน
+            </div>
+            <div class="photo-grid-12">
+              ${photoGridHtml}
+            </div>
           </div>
-          <div class="photo-grid-8">
-            ${photoGridHtml}
-          </div>
-        </div>
-
-        <!-- Summary analysis -->
-        <div class="summary-box">
-          <div class="summary-title">📝 อภิปรายและสรุปผลภาพรวมการเยี่ยมบ้านนักเรียน</div>
-          <p>${data.summaryText}</p>
         </div>
 
         <!-- Report Footer Section -->
@@ -1996,21 +2061,25 @@ const app = {
       }
     });
 
-    // Percentages calculated against total visited students
-    const completePercent = totalVisited > 0 ? Math.round((familyComplete / totalVisited) * 100) : 0;
-    const separatedPercent = totalVisited > 0 ? Math.round((familySeparated / totalVisited) * 100) : 0;
-    const relativesPercent = totalVisited > 0 ? Math.round((familyWithRelatives / totalVisited) * 100) : 0;
-    const otherPercent = totalVisited > 0 ? Math.round((familyOther / totalVisited) * 100) : 0;
+    // Percentages calculated against total visited students using Largest Remainder Method
+    const familyPcts = this.calculateExact100Percentages([familyComplete, familySeparated, familyWithRelatives, familyOther], totalVisited);
+    const completePercent = familyPcts[0];
+    const separatedPercent = familyPcts[1];
+    const relativesPercent = familyPcts[2];
+    const otherPercent = familyPcts[3];
 
-    const tier1Percent = totalVisited > 0 ? ((incomeTier1 / totalVisited) * 100) : 0;
-    const tier2Percent = totalVisited > 0 ? ((incomeTier2 / totalVisited) * 100) : 0;
-    const tier3Percent = totalVisited > 0 ? ((incomeTier3 / totalVisited) * 100) : 0;
-    const tier4Percent = totalVisited > 0 ? ((incomeTier4 / totalVisited) * 100) : 0;
+    const incomePcts = this.calculateExact100Percentages([incomeTier1, incomeTier2, incomeTier3, incomeTier4], totalVisited);
+    const tier1Percent = incomePcts[0];
+    const tier2Percent = incomePcts[1];
+    const tier3Percent = incomePcts[2];
+    const tier4Percent = incomePcts[3];
 
     // Visit statistics overall percentages
     const overallVisitedPercent = totalStudents > 0 ? ((totalVisited / totalStudents) * 100) : 0;
-    const overallOnlinePercent = totalVisited > 0 ? ((totalOnline / totalVisited) * 100) : 0;
-    const overallInPersonPercent = totalVisited > 0 ? ((totalInPerson / totalVisited) * 100) : 0;
+    
+    const visitTypesPcts = this.calculateExact100Percentages([totalOnline, totalInPerson], totalVisited);
+    const overallOnlinePercent = visitTypesPcts[0];
+    const overallInPersonPercent = visitTypesPcts[1];
 
     // Sort aggregated issues
     const sortedIssues = Object.keys(issueTotals).map(label => ({
@@ -2053,15 +2122,19 @@ const app = {
       actionsHtml = '<p class="empty-list-txt">ไม่มีข้อมูลแนวทางการช่วยเหลือที่บันทึกไว้</p>';
     }
 
-    // Build family donut pie conic-gradient
-    const cumulative2 = completePercent + separatedPercent;
-    const cumulative3 = cumulative2 + relativesPercent;
-    const donutGradient = `conic-gradient(
-      #2B5EA7 0% ${completePercent}%,
-      #5B9BD5 ${completePercent}% ${cumulative2}%,
-      #A5C8E1 ${cumulative2}% ${cumulative3}%,
-      #E8B54D ${cumulative3}% 100%
-    )`;
+    // SVG parameters for 130px diameter donut chart (outer radius 65, inner radius 40)
+    // Stroke radius: (65 + 40) / 2 = 52.5. Stroke width: 65 - 40 = 25.
+    // Circumference: 2 * Math.PI * 52.5 = 329.87
+    const circDash = 329.87;
+    const len1Dash = (circDash * completePercent) / 100;
+    const len2Dash = (circDash * separatedPercent) / 100;
+    const len3Dash = (circDash * relativesPercent) / 100;
+    const len4Dash = (circDash * otherPercent) / 100;
+
+    const offset1Dash = 0;
+    const offset2Dash = -len1Dash;
+    const offset3Dash = -(len1Dash + len2Dash);
+    const offset4Dash = -(len1Dash + len2Dash + len3Dash);
 
     // Max count for income bar row rendering
     const maxIncomeCount = Math.max(incomeTier1, incomeTier2, incomeTier3, incomeTier4, 1);
@@ -2098,7 +2171,7 @@ const app = {
           <div class="overview-stat-info">
             <span class="overview-stat-label">เยี่ยมบ้านออนไลน์</span>
             <span class="overview-stat-number">${totalOnline} <span style="font-size:14px; font-weight:500;">คน</span></span>
-            <span class="overview-stat-sub" style="color:var(--gold-accent);">คิดเป็น ${overallOnlinePercent.toFixed(1)}% ของที่เยี่ยมบ้านแล้ว</span>
+            <span class="overview-stat-sub" style="color:var(--gold-accent);">คิดเป็น ${overallOnlinePercent}% ของที่เยี่ยมบ้านแล้ว</span>
           </div>
         </div>
       </div>
@@ -2108,7 +2181,13 @@ const app = {
         <div class="overview-chart-section">
           <h3 class="overview-chart-title">📊 สัดส่วนสถานภาพทางครอบครัวสะสมระดับโรงเรียน</h3>
           <div class="donut-chart-container" style="height: auto; padding: 20px; gap: 24px;">
-            <div class="donut-chart" style="width:130px; height:130px; background: ${donutGradient};">
+            <div class="donut-chart" style="width:130px; height:130px;">
+              <svg width="130" height="130" viewBox="0 0 130 130" style="display: block;">
+                <circle cx="65" cy="65" r="52.5" fill="none" stroke="#2B5EA7" stroke-width="25" stroke-dasharray="${len1Dash} ${circDash}" stroke-dashoffset="${offset1Dash}" transform="rotate(-90 65 65)" />
+                <circle cx="65" cy="65" r="52.5" fill="none" stroke="#5B9BD5" stroke-width="25" stroke-dasharray="${len2Dash} ${circDash}" stroke-dashoffset="${offset2Dash}" transform="rotate(-90 65 65)" />
+                <circle cx="65" cy="65" r="52.5" fill="none" stroke="#A5C8E1" stroke-width="25" stroke-dasharray="${len3Dash} ${circDash}" stroke-dashoffset="${offset3Dash}" transform="rotate(-90 65 65)" />
+                <circle cx="65" cy="65" r="52.5" fill="none" stroke="#E8B54D" stroke-width="25" stroke-dasharray="${len4Dash} ${circDash}" stroke-dashoffset="${offset4Dash}" transform="rotate(-90 65 65)" />
+              </svg>
               <div class="donut-hole" style="width:80px; height:80px; top:25px; left:25px;">
                 <span class="donut-value" style="font-size:22px;">${completePercent}%</span>
                 <span class="donut-label" style="font-size:10px;">อยู่ร่วมกัน</span>
@@ -2129,30 +2208,30 @@ const app = {
             <div class="bar-row">
               <span class="bar-label" style="width:110px; font-size:11px;">ต่ำกว่า 10,000 บาท</span>
               <div class="bar-track" style="height:18px; border-radius:9px;">
-                <div class="bar-fill" style="width: ${(incomeTier1 / maxIncomeCount) * 100}%; border-radius:9px;"></div>
+                <div class="bar-fill income-red" style="width: ${(incomeTier1 / maxIncomeCount) * 100}%; border-radius:9px;"></div>
               </div>
-              <span class="bar-value" style="width:90px; font-size:11px;">${tier1Percent.toFixed(1)}% (${incomeTier1} คน)</span>
+              <span class="bar-value" style="width:90px; font-size:11px;">${tier1Percent}% (${incomeTier1} คน)</span>
             </div>
             <div class="bar-row">
               <span class="bar-label" style="width:110px; font-size:11px;">10,000 – 30,000 บาท</span>
               <div class="bar-track" style="height:18px; border-radius:9px;">
-                <div class="bar-fill" style="width: ${(incomeTier2 / maxIncomeCount) * 100}%; border-radius:9px;"></div>
+                <div class="bar-fill income-orange" style="width: ${(incomeTier2 / maxIncomeCount) * 100}%; border-radius:9px;"></div>
               </div>
-              <span class="bar-value" style="width:90px; font-size:11px;">${tier2Percent.toFixed(1)}% (${incomeTier2} คน)</span>
+              <span class="bar-value" style="width:90px; font-size:11px;">${tier2Percent}% (${incomeTier2} คน)</span>
             </div>
             <div class="bar-row">
               <span class="bar-label" style="width:110px; font-size:11px;">30,000 – 50,000 บาท</span>
               <div class="bar-track" style="height:18px; border-radius:9px;">
-                <div class="bar-fill" style="width: ${(incomeTier3 / maxIncomeCount) * 100}%; border-radius:9px;"></div>
+                <div class="bar-fill income-yellow" style="width: ${(incomeTier3 / maxIncomeCount) * 100}%; border-radius:9px;"></div>
               </div>
-              <span class="bar-value" style="width:90px; font-size:11px;">${tier3Percent.toFixed(1)}% (${incomeTier3} คน)</span>
+              <span class="bar-value" style="width:90px; font-size:11px;">${tier3Percent}% (${incomeTier3} คน)</span>
             </div>
             <div class="bar-row">
               <span class="bar-label" style="width:110px; font-size:11px;">มากกว่า 50,000 บาท</span>
               <div class="bar-track" style="height:18px; border-radius:9px;">
-                <div class="bar-fill" style="width: ${(incomeTier4 / maxIncomeCount) * 100}%; border-radius:9px;"></div>
+                <div class="bar-fill income-green" style="width: ${(incomeTier4 / maxIncomeCount) * 100}%; border-radius:9px;"></div>
               </div>
-              <span class="bar-value" style="width:90px; font-size:11px;">${tier4Percent.toFixed(1)}% (${incomeTier4} คน)</span>
+              <span class="bar-value" style="width:90px; font-size:11px;">${tier4Percent}% (${incomeTier4} คน)</span>
             </div>
           </div>
         </div>

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
   <!-- Style Sheet -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3.6">
 </head>
 <body>
 
@@ -183,14 +183,9 @@
             <div class="step-circle">5</div>
             <div class="step-label">ปัญหาที่พบ</div>
           </div>
-          <div class="step-line"></div>
+           <div class="step-line"></div>
           <div class="step-item" data-step="6" onclick="app.goToStep(6)">
             <div class="step-circle">6</div>
-            <div class="step-label">แนวทางการช่วยเหลือ</div>
-          </div>
-          <div class="step-line"></div>
-          <div class="step-item" data-step="7" onclick="app.goToStep(7)">
-            <div class="step-circle">7</div>
             <div class="step-label">ภาพถ่าย/สรุป</div>
           </div>
         </div>
@@ -280,7 +275,7 @@
                 <label class="form-label" for="input-online-count">เยี่ยมบ้านรูปแบบออนไลน์ <span class="required">*</span></label>
                 <input type="number" id="input-online-count" class="form-input" required min="0">
                 <div class="calc-help">
-                  ร้อยละ: <span class="auto-calc" id="calc-online-percent">0.00%</span>
+                  ร้อยละ: <span class="auto-calc" id="calc-online-percent">0%</span> ของที่เยี่ยมบ้านแล้ว
                 </div>
               </div>
 
@@ -288,7 +283,7 @@
                 <label class="form-label">เยี่ยมบ้านแบบ ณ ที่ตั้ง (ณ บ้านนักเรียน) <span class="info-badge">คำนวณออโต้</span></label>
                 <div class="static-value-field">
                   <span id="display-inperson-count" class="bold-val">0</span> คน 
-                  (<span id="calc-inperson-percent">0.00%</span>)
+                  (<span id="calc-inperson-percent">0%</span> ของที่เยี่ยมบ้านแล้ว)
                 </div>
                 <div class="input-desc-helper">คำนวณจาก: จำนวนเยี่ยมบ้านแล้ว ลบด้วย จำนวนเยี่ยมบ้านออนไลน์</div>
               </div>
@@ -350,12 +345,12 @@
               <div class="form-group">
                 <label class="form-label" for="input-income-tier1">ต่ำกว่า 10,000 บาท (จำนวนนักเรียน)</label>
                 <input type="number" id="input-income-tier1" class="form-input income-count" min="0">
-                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier1-percent">0.00%</span></div>
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier1-percent">0%</span></div>
               </div>
               <div class="form-group">
                 <label class="form-label" for="input-income-tier2">10,000 – 30,000 บาท (จำนวนนักเรียน)</label>
                 <input type="number" id="input-income-tier2" class="form-input income-count" min="0">
-                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier2-percent">0.00%</span></div>
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier2-percent">0%</span></div>
               </div>
             </div>
 
@@ -363,12 +358,12 @@
               <div class="form-group">
                 <label class="form-label" for="input-income-tier3">30,000 – 50,000 บาท (จำนวนนักเรียน)</label>
                 <input type="number" id="input-income-tier3" class="form-input income-count" min="0">
-                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier3-percent">0.00%</span></div>
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier3-percent">0%</span></div>
               </div>
               <div class="form-group">
                 <label class="form-label" for="input-income-tier4">มากกว่า 50,000 บาท (จำนวนนักเรียน)</label>
                 <input type="number" id="input-income-tier4" class="form-input income-count" min="0">
-                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier4-percent">0.00%</span></div>
+                <div class="calc-help">ร้อยละ: <span class="auto-calc" id="calc-income-tier4-percent">0%</span></div>
               </div>
             </div>
 
@@ -463,36 +458,18 @@
             <div id="issue-validation-message" class="validation-msg"></div>
           </div>
 
-          <!-- STEP 6: Action Plans -->
+          <!-- STEP 6: Photos & Summary -->
           <div class="form-step" data-step="6">
             <div class="step-header">
-              <h2 class="step-title">แนวทางการช่วยเหลือหรือพัฒนา (Action Plans)</h2>
-              <p class="step-description">กรอกข้อเสนอแนะหรือแผนการปฏิบัติงานการดูแลช่วยเหลือนักเรียนในส่วนที่ 5 ของเล่มรายงาน</p>
-            </div>
-
-            <div class="list-section">
-              <div class="list-section-header">
-                <h3 class="list-title">📋 แนวทางการดูแลช่วยเหลือของโรงเรียน (สามารถเพิ่ม/ลบรายการได้)</h3>
-                <button type="button" class="btn btn-sm btn-secondary" onclick="app.addDynamicItem('actionplans-list-inputs')">+ เพิ่มแนวทาง</button>
-              </div>
-              <div id="actionplans-list-inputs" class="dynamic-inputs-container">
-                <!-- Inputs added dynamically -->
-              </div>
-            </div>
-          </div>
-
-          <!-- STEP 7: Photos & Summary -->
-          <div class="form-step" data-step="7">
-            <div class="step-header">
               <h2 class="step-title">ภาพถ่ายกิจกรรมเยี่ยมบ้าน และสรุปวิเคราะห์ข้อมูล</h2>
-              <p class="step-description">ขั้นตอนสุดท้าย: อัปโหลดภาพเยี่ยมบ้าน 8 ภาพ และเขียนอภิปรายผลภาพรวมเพื่อจัดเก็บข้อมูลเข้าระบบ</p>
+              <p class="step-description">ขั้นตอนสุดท้าย: อัปโหลดภาพเยี่ยมบ้าน 12 ภาพ และเขียนอภิปรายผลภาพรวมเพื่อจัดเก็บข้อมูลเข้าระบบ</p>
             </div>
 
             <div class="form-group">
-              <label class="form-label">รูปภาพกิจกรรมเยี่ยมบ้าน (อัปโหลดจำนวน 8 รูป) <span class="required">*</span></label>
+              <label class="form-label">รูปภาพกิจกรรมเยี่ยมบ้าน (อัปโหลดจำนวน 12 รูป) <span class="required">*</span></label>
               <p class="input-helper-text">คลิกที่แต่ละช่องเพื่อเลือกไฟล์รูปภาพจากเครื่องของคุณ</p>
               <div class="photo-upload-grid form-photo-grid">
-                <!-- 8 photo slots -->
+                <!-- 12 photo slots -->
                 <div class="photo-slot" data-index="0">
                   <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 0)">
                   <div class="photo-preview-placeholder">
@@ -564,6 +541,42 @@
                   </div>
                   <img src="" class="photo-preview-img" style="display:none;" />
                   <button type="button" class="delete-photo-btn" onclick="app.removePhoto(7)">×</button>
+                </div>
+                <div class="photo-slot" data-index="8">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 8)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 9</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(8)">×</button>
+                </div>
+                <div class="photo-slot" data-index="9">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 9)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 10</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(9)">×</button>
+                </div>
+                <div class="photo-slot" data-index="10">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 10)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 11</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(10)">×</button>
+                </div>
+                <div class="photo-slot" data-index="11">
+                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 11)">
+                  <div class="photo-preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <span>รูปภาพ 12</span>
+                  </div>
+                  <img src="" class="photo-preview-img" style="display:none;" />
+                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(11)">×</button>
                 </div>
               </div>
             </div>
@@ -639,6 +652,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <!-- APPLICATION LOGIC -->
-  <script src="app.js"></script>
+  <script src="app.js?v=3.6"></script>
 </body>
 </html>
