@@ -1712,59 +1712,93 @@ const app = {
       <div class="report-body">
         
         <!-- Section 1: Stats -->
-        <div class="report-card" style="margin-bottom: 6px; height: 127px;">
-          <div class="section-title">
-            <span class="section-num">1</span> สถิติผลการออกเยี่ยมบ้านนักเรียน
+        <div class="report-card card-color-1" style="margin-bottom: 6px; height: 127px;">
+          <div class="section-title sec-color-1">
+            1. สถิติการเยี่ยมบ้าน
           </div>
           <div class="stats-row">
-            <div class="stat-card">
-              <div class="stat-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <div class="stat-card stat-c-1">
+              <div class="stat-icon-wrap">
+                <div class="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                </div>
               </div>
-              <div class="stat-label">นักเรียนทั้งหมดในห้อง</div>
-              <div class="stat-number">${data.totalStudents}</div>
-              <div class="stat-sub">คน</div>
+              <div class="stat-info">
+                <div class="stat-label">นักเรียนทั้งหมด</div>
+                <div class="stat-val-row">
+                  <span class="stat-number">${data.totalStudents}</span>
+                  <span class="stat-unit">คน</span>
+                </div>
+              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background-color: #e8f8f5; color: var(--success-green);">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div class="stat-card stat-c-2">
+              <div class="stat-icon-wrap">
+                <div class="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
               </div>
-              <div class="stat-label">เยี่ยมบ้านเรียบร้อยแล้ว</div>
-              <div class="stat-number">${data.stat_visitedCount}</div>
-              <div class="stat-sub">${visitedPercent}%</div>
+              <div class="stat-info">
+                <div class="stat-label">เยี่ยมบ้านแล้ว</div>
+                <div class="stat-val-row">
+                  <span class="stat-number">${data.stat_visitedCount}</span>
+                  <span class="stat-unit">คน</span>
+                </div>
+                <div class="stat-badge-pill green-pill">${visitedPercent}%</div>
+              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background-color: #ebf5fb; color: var(--light-blue);">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+            <div class="stat-card stat-c-3">
+              <div class="stat-icon-wrap">
+                <div class="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </div>
               </div>
-              <div class="stat-label">เยี่ยมบ้านรูปแบบออนไลน์</div>
-              <div class="stat-number">${data.stat_onlineCount}</div>
-              <div class="stat-sub">${onlinePercent}%</div>
+              <div class="stat-info">
+                <div class="stat-label">เยี่ยมออนไลน์</div>
+                <div class="stat-val-row">
+                  <span class="stat-number">${data.stat_onlineCount}</span>
+                  <span class="stat-unit">คน</span>
+                </div>
+                <div class="stat-badge-pill gold-pill">${onlinePercent}%</div>
+              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background-color: #fef9e7; color: var(--gold-accent);">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <div class="stat-card stat-c-4">
+              <div class="stat-icon-wrap">
+                <div class="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                </div>
               </div>
-              <div class="stat-label">เยี่ยมบ้าน ณ บ้านนักเรียน</div>
-              <div class="stat-number">${data.stat_inPersonCount}</div>
-              <div class="stat-sub">${inPersonPercent}%</div>
+              <div class="stat-info">
+                <div class="stat-label">เยี่ยม ณ บ้าน</div>
+                <div class="stat-val-row">
+                  <span class="stat-number">${data.stat_inPersonCount}</span>
+                  <span class="stat-unit">คน</span>
+                </div>
+                <div class="stat-badge-pill purple-pill">${inPersonPercent}%</div>
+              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background-color: #fcedeb; color: var(--danger-red);">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+            <div class="stat-card stat-c-5">
+              <div class="stat-icon-wrap">
+                <div class="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                </div>
               </div>
-              <div class="stat-label">ไม่ได้เยี่ยมบ้าน</div>
-              <div class="stat-number">${notVisitedCount}</div>
-              <div class="stat-sub">${notVisitedPercent}%</div>
+              <div class="stat-info">
+                <div class="stat-label">ไม่ได้เยี่ยมบ้าน</div>
+                <div class="stat-val-row">
+                  <span class="stat-number">${notVisitedCount}</span>
+                  <span class="stat-unit">คน</span>
+                </div>
+                <div class="stat-badge-pill red-pill">${notVisitedPercent}%</div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Row Grid 1: Family (Pie/Donut) & Income (Bars) -->
         <div class="report-grid grid-row-1">
-          <div class="report-card">
-            <div class="section-title">
-              <span class="section-num">2</span> สถานภาพทางครอบครัว
+          <div class="report-card card-color-2">
+            <div class="section-title sec-color-2">
+              2. ข้อมูลครอบครัวของนักเรียน
             </div>
             <div class="donut-chart-container">
               <div class="donut-chart">
@@ -1787,9 +1821,9 @@ const app = {
               </ul>
             </div>
           </div>
-          <div class="report-card">
-            <div class="section-title">
-              <span class="section-num">3</span> สภาพเศรษฐกิจครัวเรือน (รายได้/เดือน)
+          <div class="report-card card-color-3">
+            <div class="section-title sec-color-3">
+              3. สภาพเศรษฐกิจของครัวเรือน (รายได้เฉลี่ย/เดือน)
             </div>
             <div class="bar-chart">
               ${incomeBarsHtml}
@@ -1799,17 +1833,17 @@ const app = {
 
         <!-- Row Grid 2: Issues (Top 5) & Summary (Section 5) -->
         <div class="report-grid grid-row-2">
-          <div class="report-card">
-            <div class="section-title">
-              <span class="section-num">4</span> ปัญหา/อุปสรรคที่พบมากสุด 5 อันดับ
+          <div class="report-card card-color-4">
+            <div class="section-title sec-color-4">
+              4. ประเด็นที่พบจากการเยี่ยมบ้าน (Top 5)
             </div>
             <div class="issues-list">
               ${issuesHtml}
             </div>
           </div>
-          <div class="report-card summary-card" style="height: 100%;">
-            <div class="section-title">
-              <span class="section-num">5</span> สรุปผล
+          <div class="report-card summary-card card-color-5" style="height: 100%;">
+            <div class="section-title sec-color-5">
+              5. สรุปผล
             </div>
             <p>${data.summaryText}</p>
           </div>
@@ -1817,9 +1851,9 @@ const app = {
 
         <!-- Row Grid 3: Section 6 Photos (Full Width) -->
         <div class="report-grid grid-row-3">
-          <div class="report-card photos-card" style="grid-column: span 2; height: 100%;">
-            <div class="section-title">
-              <span class="section-num">6</span> ภาพกิจกรรมการเยี่ยมบ้าน
+          <div class="report-card photos-card card-color-6" style="grid-column: span 2; height: 100%;">
+            <div class="section-title sec-color-6">
+              6. ภาพกิจกรรมการเยี่ยมบ้าน
             </div>
             <div class="photo-grid-12">
               ${photoGridHtml}
