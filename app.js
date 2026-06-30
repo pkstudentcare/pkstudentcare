@@ -4,16 +4,10 @@
  * 
  * Firebase Configuration & Initialization
  */
-const firebaseConfig = {
-  apiKey: "AIzaSyBXQmnX4Q5Qm_KgvoDUeapSDplSv126H-Q",
-  authDomain: "pkstudentcare-6cc57.firebaseapp.com",
-  databaseURL: "https://pkstudentcare-6cc57-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "pkstudentcare-6cc57",
-  storageBucket: "pkstudentcare-6cc57.firebasestorage.app",
-  messagingSenderId: "993494045553",
-  appId: "1:993494045553:web:a0b38a0b30b9fb5ba41cd0",
-  measurementId: "G-4C5KQ9N0LL"
-};
+// firebaseConfig is loaded globally from config.js (ignored by git)
+if (typeof firebaseConfig === 'undefined') {
+  console.error("firebaseConfig is not defined. Please copy config.example.js to config.js and add your credentials.");
+}
 
 // Initialize Firebase Compat
 let database = null;
