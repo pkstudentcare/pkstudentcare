@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
   <!-- Style Sheet -->
-  <link rel="stylesheet" href="style.css?v=3.12">
+  <link rel="stylesheet" href="style.css?v=3.20">
 </head>
 <body>
 
@@ -463,6 +463,66 @@
                   <span class="unit-text">คน</span>
                 </div>
               </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาการเดินทาง" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาการเดินทาง</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาด้านสุขภาพร่างกาย/โรคประจำตัว" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาด้านสุขภาพร่างกาย/โรคประจำตัว</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาการใช้ความรุนแรง" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาการใช้ความรุนแรง</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาพฤติกรรมทางเพศ" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาพฤติกรรมทางเพศ</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาการเข้าถึงอินเทอร์เน็ต" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาการเข้าถึงอินเทอร์เน็ต</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
+              <div class="issue-checkbox-item">
+                <label class="checkbox-label">
+                  <input type="checkbox" class="issue-checkbox" value="ปัญหาด้านพัฒนาการ/การเรียนรู้" onchange="app.toggleIssueInput(this)">
+                  <span class="checkbox-text">ปัญหาด้านพัฒนาการ/การเรียนรู้</span>
+                </label>
+                <div class="issue-count-wrapper">
+                  <input type="number" class="form-input issue-count-field text-center" disabled min="1" placeholder="จำนวนคน">
+                  <span class="unit-text">คน</span>
+                </div>
+              </div>
             </div>
             <div id="issue-validation-message" class="validation-msg"></div>
           </div>
@@ -471,11 +531,11 @@
           <div class="form-step" data-step="6">
             <div class="step-header">
               <h2 class="step-title">ภาพถ่ายกิจกรรมเยี่ยมบ้าน และสรุปวิเคราะห์ข้อมูล</h2>
-              <p class="step-description">ขั้นตอนสุดท้าย: อัปโหลดภาพเยี่ยมบ้าน 12 ภาพ และเขียนอภิปรายผลภาพรวมเพื่อจัดเก็บข้อมูลเข้าระบบ</p>
+              <p class="step-description">ขั้นตอนสุดท้าย: อัปโหลดภาพเยี่ยมบ้าน 6 ภาพ และเขียนอภิปรายผลภาพรวมเพื่อจัดเก็บข้อมูลเข้าระบบ</p>
             </div>
 
             <div class="form-group">
-              <label class="form-label">รูปภาพกิจกรรมเยี่ยมบ้าน (อัปโหลดจำนวน 12 รูป) <span class="required">*</span></label>
+              <label class="form-label">รูปภาพกิจกรรมเยี่ยมบ้าน (อัปโหลดสูงสุด 6 รูป) <span class="required">*</span></label>
               <p class="input-helper-text">คลิกที่แต่ละช่องเพื่อเลือกไฟล์รูปภาพจากเครื่องของคุณ</p>
               <div class="photo-upload-grid form-photo-grid">
                 <!-- 12 photo slots -->
@@ -533,60 +593,7 @@
                   <img src="" class="photo-preview-img" style="display:none;" />
                   <button type="button" class="delete-photo-btn" onclick="app.removePhoto(5)">×</button>
                 </div>
-                <div class="photo-slot" data-index="6">
-                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 6)">
-                  <div class="photo-preview-placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                    <span>รูปภาพ 7</span>
-                  </div>
-                  <img src="" class="photo-preview-img" style="display:none;" />
-                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(6)">×</button>
-                </div>
-                <div class="photo-slot" data-index="7">
-                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 7)">
-                  <div class="photo-preview-placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                    <span>รูปภาพ 8</span>
-                  </div>
-                  <img src="" class="photo-preview-img" style="display:none;" />
-                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(7)">×</button>
-                </div>
-                <div class="photo-slot" data-index="8">
-                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 8)">
-                  <div class="photo-preview-placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                    <span>รูปภาพ 9</span>
-                  </div>
-                  <img src="" class="photo-preview-img" style="display:none;" />
-                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(8)">×</button>
-                </div>
-                <div class="photo-slot" data-index="9">
-                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 9)">
-                  <div class="photo-preview-placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                    <span>รูปภาพ 10</span>
-                  </div>
-                  <img src="" class="photo-preview-img" style="display:none;" />
-                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(9)">×</button>
-                </div>
-                <div class="photo-slot" data-index="10">
-                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 10)">
-                  <div class="photo-preview-placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                    <span>รูปภาพ 11</span>
-                  </div>
-                  <img src="" class="photo-preview-img" style="display:none;" />
-                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(10)">×</button>
-                </div>
-                <div class="photo-slot" data-index="11">
-                  <input type="file" class="photo-file-input" accept="image/*" onchange="app.triggerPhotoUpload(this, 11)">
-                  <div class="photo-preview-placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="camera-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                    <span>รูปภาพ 12</span>
-                  </div>
-                  <img src="" class="photo-preview-img" style="display:none;" />
-                  <button type="button" class="delete-photo-btn" onclick="app.removePhoto(11)">×</button>
-                </div>
+
               </div>
             </div>
 
@@ -621,7 +628,7 @@
           <span class="toolbar-status">🔎 ตัวอย่างรายงานขนาด A4</span>
         </div>
         <div class="toolbar-right">
-          <button class="btn btn-info" onclick="app.editCurrentReport()">
+          <button class="btn btn-info" id="btn-edit-toolbar" onclick="app.editCurrentReport()">
             ✏️ แก้ไขข้อมูล
           </button>
           <button class="btn btn-warning" id="btn-post-toolbar" onclick="app.postCurrentToDashboard()">
@@ -661,6 +668,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <!-- APPLICATION LOGIC -->
-  <script src="app.js?v=3.12"></script>
+  <script src="app.js?v=3.20"></script>
 </body>
 </html>

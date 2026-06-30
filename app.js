@@ -705,8 +705,7 @@ const app = {
     // Step 6
     document.getElementById('input-summary-text').value = data.summaryText;
 
-    // Photos
-    this.photoPreviewArray = [...data.photos];
+    this.photoPreviewArray = Array(6).fill('').map((_, i) => (data.photos && data.photos[i]) || '');
     this.updatePhotoPreviews();
 
     // Trigger Calculations
@@ -721,6 +720,12 @@ const app = {
 
     const report = appState.reports.find(r => r.reportId === reportId);
     if (!report) return;
+
+    // Posted reports can only be edited by Admin
+    if (report.isPosted && appState.userRole !== 'admin') {
+      this.showToast('⚠️ เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถแก้ไขรายงานที่โพสต์แล้วได้ หากข้อมูลผิดกรุณาแจ้งแอดมินเพื่อลบแล้วกรอกใหม่', 'error');
+      return;
+    }
 
     if (report.isSample || report.reportId === 'RPT-SAMPLE55') {
       if (appState.userRole !== 'admin') {
@@ -779,11 +784,11 @@ const app = {
 
     document.getElementById('input-summary-text').value = report.summaryText;
 
-    // Support size migration if report is from older version with only 6 or 8 slots
-    this.photoPreviewArray = Array(12).fill('');
+    // Support size migration if report is from older version with only 6 slots
+    this.photoPreviewArray = Array(6).fill('');
     if (report.photos) {
       report.photos.forEach((photo, idx) => {
-        if (idx < 12) this.photoPreviewArray[idx] = photo;
+        if (idx < 6) this.photoPreviewArray[idx] = photo;
       });
     }
     this.updatePhotoPreviews();
@@ -853,7 +858,7 @@ const app = {
       this.addDynamicItem('actionplans-list-inputs');
     }
 
-    this.photoPreviewArray = Array(12).fill('');
+    this.photoPreviewArray = Array(6).fill('');
     this.updatePhotoPreviews();
 
     document.getElementById('input-summary-text').value = '';
@@ -1012,7 +1017,7 @@ const app = {
    * Dynamic Input list logic
    */
   initDynamicListListeners() {
-    this.photoPreviewArray = Array(12).fill('');
+    this.photoPreviewArray = Array(6).fill('');
   },
 
   /**
@@ -1076,12 +1081,40 @@ const app = {
    */
   triggerPhotoUpload(input, index) {
     if (input.files && input.files[0]) {
+      const file = input.files[0];
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.photoPreviewArray[index] = e.target.result;
-        this.updatePhotoPreviews();
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress to JPEG with 70% quality
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+          this.photoPreviewArray[index] = compressedBase64;
+          this.updatePhotoPreviews();
+        };
+        img.src = e.target.result;
       };
-      reader.readAsDataURL(input.files[0]);
+      reader.readAsDataURL(file);
     }
   },
 
@@ -1295,7 +1328,15 @@ const app = {
     if (event) event.stopPropagation();
 
     const report = appState.reports.find(r => r.reportId === reportId);
-    if (report && (report.isSample || report.reportId === 'RPT-SAMPLE55')) {
+    if (!report) return;
+
+    // Posted reports can only be deleted by Admin
+    if (report.isPosted && appState.userRole !== 'admin') {
+      this.showToast('⚠️ เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถลบรายงานที่โพสต์แล้วได้ หากข้อมูลผิดกรุณาแจ้งแอดมินเพื่อลบ', 'error');
+      return;
+    }
+
+    if (report.isSample || report.reportId === 'RPT-SAMPLE55') {
       if (appState.userRole !== 'admin') {
         this.showToast('⚠️ เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถลบรายงานตัวอย่างได้', 'error');
         return;
@@ -1507,8 +1548,12 @@ const app = {
             </button>
           ` : ''}
           <div style="display: flex; gap: 10px; width: 100%;">
-            <button class="btn btn-secondary btn-sm" onclick="app.editReport('${report.reportId}', event)">✏️ แก้ไข</button>
-            <button class="btn btn-danger btn-sm" onclick="app.deleteReport('${report.reportId}', event)">🗑️ ลบ</button>
+            ${(appState.userRole === 'admin' || !report.isPosted) ? `
+              <button class="btn btn-secondary btn-sm" onclick="app.editReport('${report.reportId}', event)">✏️ แก้ไข</button>
+              <button class="btn btn-danger btn-sm" onclick="app.deleteReport('${report.reportId}', event)">🗑️ ลบ</button>
+            ` : `
+              <span style="font-size: 11px; color: var(--text-muted); text-align: center; width: 100%; padding: 4px 0; font-weight: 500;">📢 โพสต์แล้ว (ติดต่อแอดมินเพื่อลบ/กรอกใหม่)</span>
+            `}
           </div>
         </div>
       `;
@@ -1629,7 +1674,7 @@ const app = {
 
     // Render Photos Grid
     let photoGridHtml = '';
-    for (let idx = 0; idx < 12; idx++) {
+    for (let idx = 0; idx < 6; idx++) {
       const photo = data.photos && data.photos[idx];
       if (photo) {
         photoGridHtml += `
@@ -1655,6 +1700,7 @@ const app = {
     const pngBtn = document.getElementById('btn-png-toolbar');
     const postToolbarBtn = document.getElementById('btn-post-toolbar');
     const statusText = document.getElementById('toolbar-status-text');
+    const editToolbarBtn = document.getElementById('btn-edit-toolbar');
 
     if (data.isPosted) {
       if (printBtn) printBtn.disabled = false;
@@ -1664,6 +1710,9 @@ const app = {
         postToolbarBtn.innerHTML = '✅ โพสต์สำเร็จแล้ว';
         postToolbarBtn.className = 'btn btn-secondary';
         postToolbarBtn.disabled = true;
+      }
+      if (editToolbarBtn) {
+        editToolbarBtn.style.display = appState.userRole === 'admin' ? 'inline-flex' : 'none';
       }
       if (statusText) {
         statusText.innerHTML = '🔎 ตัวอย่างรายงานขนาด A4 (พร้อมสั่งพิมพ์/ส่งออก)';
@@ -1677,6 +1726,9 @@ const app = {
         postToolbarBtn.innerHTML = '📢 โพสต์ลงแดชบอร์ด';
         postToolbarBtn.className = 'btn btn-warning';
         postToolbarBtn.disabled = false;
+      }
+      if (editToolbarBtn) {
+        editToolbarBtn.style.display = 'inline-flex';
       }
       if (statusText) {
         statusText.innerHTML = '💡 แนะนำให้กดโพสต์ลงแดชบอร์ดเพื่อบันทึกข้อมูลก่อนสั่งพิมพ์/ส่งออก';
@@ -1855,7 +1907,7 @@ const app = {
             <div class="section-title sec-color-6">
               6. ภาพกิจกรรมการเยี่ยมบ้าน
             </div>
-            <div class="photo-grid-12">
+            <div class="photo-grid-6">
               ${photoGridHtml}
             </div>
           </div>
