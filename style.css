@@ -2804,8 +2804,8 @@ body.exporting-pdf .a4-page {
   justify-content: flex-start;
 }
 .summary-card p {
-  font-size: 10.5px;
-  line-height: 1.5;
+  font-size: 9.8px;
+  line-height: 1.4;
   color: var(--text-dark);
   margin: 0;
   text-indent: 24px;
