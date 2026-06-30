@@ -1,4 +1,7 @@
 /**
+ * DIGITAL SIGNATURE
+ * Developer Teacher: Paramet Phutphueakphong
+ * 
  * Firebase Configuration & Initialization
  */
 const firebaseConfig = {
